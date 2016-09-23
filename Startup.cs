@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
 using Calcular.CoreApi.Models;
 using Newtonsoft.Json;
+using Microsoft.AspNetCore.Identity;
 
 namespace Calcular.CoreApi
 {
