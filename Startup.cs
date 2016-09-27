@@ -7,6 +7,9 @@ using Microsoft.EntityFrameworkCore;
 using Calcular.CoreApi.Models;
 using Newtonsoft.Json;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using System.Threading.Tasks;
+using System;
 
 namespace Calcular.CoreApi
 {
@@ -20,9 +23,9 @@ namespace Calcular.CoreApi
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
                 .AddEnvironmentVariables();
 
-            using (var db = new ApplicationDbContext())
+            using (var context = new ApplicationDbContext())
             {
-                db.Database.Migrate();
+                context.Database.Migrate();
             }
 
             Configuration = builder.Build();
@@ -34,6 +37,16 @@ namespace Calcular.CoreApi
         {
             services.AddEntityFrameworkSqlite();
             services.AddDbContext<ApplicationDbContext>();
+
+            services.AddIdentity<User, IdentityRole>(
+                    o => {
+                        o.Password.RequireLowercase = false;
+                        o.Password.RequireUppercase = false;
+                        o.Password.RequireNonAlphanumeric = false;
+                        o.Password.RequiredLength = 6;
+                    })
+                    .AddEntityFrameworkStores<ApplicationDbContext>()
+                    .AddDefaultTokenProviders();
 
             services.AddMvc()
                     .AddJsonOptions(options =>
@@ -49,6 +62,7 @@ namespace Calcular.CoreApi
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
 
+            app.UseIdentity();
             app.UseMvc();
             app.UseSwagger();
             app.UseSwaggerUi();
