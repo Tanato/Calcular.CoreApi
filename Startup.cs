@@ -10,6 +10,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using System.Threading.Tasks;
 using System;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.Authorization;
 
 namespace Calcular.CoreApi
 {
@@ -38,17 +40,20 @@ namespace Calcular.CoreApi
             services.AddEntityFrameworkSqlite();
             services.AddDbContext<ApplicationDbContext>();
 
-            services.AddIdentity<User, IdentityRole>(
-                    o => {
-                        o.Password.RequireLowercase = false;
-                        o.Password.RequireUppercase = false;
-                        o.Password.RequireNonAlphanumeric = false;
-                        o.Password.RequiredLength = 6;
+            services.AddIdentity<User, IdentityRole>(options =>
+                    {
+                        options.Password.RequireLowercase = false;
+                        options.Password.RequireUppercase = false;
+                        options.Password.RequireNonAlphanumeric = false;
+                        options.Password.RequiredLength = 6;
                     })
                     .AddEntityFrameworkStores<ApplicationDbContext>()
                     .AddDefaultTokenProviders();
 
-            services.AddMvc()
+            services.AddMvc(config =>
+                    {
+                        config.Filters.Add(new AuthorizeFilter(new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build()));
+                    })
                     .AddJsonOptions(options =>
                     {
                         options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
@@ -59,11 +64,14 @@ namespace Calcular.CoreApi
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
+            app.EnsureSeedIdentity();
+
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
 
             app.UseIdentity();
             app.UseMvc();
+
             app.UseSwagger();
             app.UseSwaggerUi();
         }

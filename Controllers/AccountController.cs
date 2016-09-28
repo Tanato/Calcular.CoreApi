@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 
 namespace MovieAngularJSApp.Controllers
 {
-    [Authorize]
     [Route("api/[controller]")]
     public class AccountController : Controller
     {
