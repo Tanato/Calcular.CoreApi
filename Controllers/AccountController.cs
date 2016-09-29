@@ -27,10 +27,10 @@ namespace MovieAngularJSApp.Controllers
             var result = await signInManager.PasswordSignInAsync(login.UserName, login.Password, false, false);
             if (result.Succeeded)
             {
-                return Redirect(returnUrl);
+                return Ok();
             }
-            ModelState.AddModelError("", "Invalid username or password.");
-            return View();
+            ModelState.AddModelError("Error", "Invalid username or password.");
+            return BadRequest(ModelState);
         }
 
         [HttpPost("register")]

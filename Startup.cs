@@ -42,6 +42,7 @@ namespace Calcular.CoreApi
 
             services.AddIdentity<User, IdentityRole>(options =>
                     {
+                        options.Cookies.ApplicationCookie.AutomaticChallenge = false;
                         options.Password.RequireLowercase = false;
                         options.Password.RequireUppercase = false;
                         options.Password.RequireNonAlphanumeric = false;
