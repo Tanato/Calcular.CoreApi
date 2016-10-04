@@ -1,8 +1,11 @@
 ﻿using Calcular.CoreApi.Models;
 using Calcular.CoreApi.Models.ViewModels;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -22,7 +25,7 @@ namespace MovieAngularJSApp.Controllers
 
         [HttpPost("login")]
         [AllowAnonymous]
-        public async Task<IActionResult> Login([FromBody] LoginViewModel login, string returnUrl = "/home")
+        public async Task<IActionResult> Login([FromBody] LoginViewModel login)
         {
             var result = await signInManager.PasswordSignInAsync(login.UserName, login.Password, false, false);
             if (result.Succeeded)
