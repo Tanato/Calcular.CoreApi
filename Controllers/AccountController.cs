@@ -41,7 +41,7 @@ namespace MovieAngularJSApp.Controllers
         {
             if (ModelState.IsValid)
             {
-                var user = new User { UserName = model.UserName, Email = model.Email, BirthDate = model.BirthDate };
+                var user = new User { Name = model.Name, UserName = model.UserName, Email = model.Email, BirthDate = model.BirthDate };
                 var result = await userManager.CreateAsync(user, "password123");
                 if (result.Succeeded)
                 {
@@ -88,9 +88,10 @@ namespace MovieAngularJSApp.Controllers
         }
 
         [HttpGet("loggeduser")]
-        public IActionResult GetLoggedUser()
+        public async Task<IActionResult> GetLoggedUser()
         {
-            return Ok(userManager.GetUserAsync(HttpContext.User));
+            var user = await userManager.GetUserAsync(HttpContext.User);
+            return Ok(user);
         }
     }
 }

@@ -7,6 +7,10 @@ namespace Calcular.CoreApi.Models.ViewModels
     {
         [Required]
         [Display(Name = "Name")]
+        public string Name { get; set; }
+
+        [Required]
+        [Display(Name = "UserName")]
         public string UserName { get; set; }
 
         [Required]
