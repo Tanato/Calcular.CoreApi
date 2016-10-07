@@ -11,13 +11,12 @@ namespace Calcular.CoreApi.Controllers
 {
     [Authorize]
     [Route("api/[controller]")]
-    public class UsersController : Controller
+    public class UserController : Controller
     {
-        // add some users
         private UserManager<User> userManager;
         private readonly ApplicationDbContext db;
 
-        public UsersController(ApplicationDbContext db, UserManager<User> userManager)
+        public UserController(ApplicationDbContext db, UserManager<User> userManager)
         {
             this.db = db;
             this.userManager = userManager;
@@ -31,9 +30,10 @@ namespace Calcular.CoreApi.Controllers
         }
 
         [HttpGet("{id}")]
-        public User Get(int id)
+        public IActionResult Get(int id)
         {
-            return db.Users.Include(x => x.Roles).SingleOrDefault(x => x.Id.Equals(id));
+            var user = db.Users.Include(x => x.Roles).SingleOrDefault(x => x.Id.Equals(id));
+            return Ok(new { Name = user.Name, BirthDate = user.BirthDate, Email = user.Email, Login = user.UserName });
         }
 
         [HttpPost("{userId}")]

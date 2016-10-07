@@ -2,16 +2,23 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System.Linq;
 
-namespace Calcular.CoreApi
+namespace Calcular.CoreApi.Migrations
 {
     public static class DataSeed
     {
         public static async void EnsureSeedIdentity(this IApplicationBuilder app)
         {
             var context = app.ApplicationServices.GetService<ApplicationDbContext>();
+
+            if (context != null)
+            {
+                context.Database.Migrate();
+            }
+
             var roleManager = app.ApplicationServices.GetService<RoleManager<IdentityRole>>();
             var userManager = app.ApplicationServices.GetService<UserManager<User>>();
 

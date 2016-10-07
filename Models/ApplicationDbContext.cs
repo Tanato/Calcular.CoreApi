@@ -6,11 +6,8 @@ namespace Calcular.CoreApi.Models
 {
     public class ApplicationDbContext : IdentityDbContext<User>
     {
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            optionsBuilder.UseSqlite("Filename=./Calcular.Core.db");
-        }
-
+        public ApplicationDbContext(DbContextOptions options) : base(options) { }
+        
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);

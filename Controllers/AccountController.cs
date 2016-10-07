@@ -91,7 +91,7 @@ namespace MovieAngularJSApp.Controllers
         public async Task<IActionResult> GetLoggedUser()
         {
             var user = await userManager.GetUserAsync(HttpContext.User);
-            return Ok(user);
+            return Ok(new { Name = user.Name, BirthDate = user.BirthDate, Email = user.Email, Login = user.UserName });
         }
     }
 }

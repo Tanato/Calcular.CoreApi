@@ -14,33 +14,40 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using System.Net;
+using Calcular.CoreApi.Migrations;
+using Newtonsoft.Json.Linq;
+using System.Linq;
+using Steeltoe.Extensions.Configuration;
+using Swashbuckle.Swagger.Model;
 
 namespace Calcular.CoreApi
 {
     public class Startup
     {
-        public Startup(IHostingEnvironment env)
+        public IConfigurationRoot Configuration { get; }
+        private IHostingEnvironment CurrentEnvironment { get; set; }
+
+        public Startup(IHostingEnvironment environment)
         {
             var builder = new ConfigurationBuilder()
-                .SetBasePath(env.ContentRootPath)
+                .SetBasePath(environment.ContentRootPath)
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
+                .AddJsonFile($"appsettings.{environment.EnvironmentName}.json", optional: true)
                 .AddEnvironmentVariables();
 
-            using (var context = new ApplicationDbContext())
-            {
-                context.Database.Migrate();
-            }
+            if (environment.IsDevelopment())
+                builder.AddUserSecrets();
+            else
+                builder.AddCloudFoundry();
 
             Configuration = builder.Build();
+            CurrentEnvironment = environment;
         }
-
-        public IConfigurationRoot Configuration { get; }
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddEntityFrameworkSqlite();
-            services.AddDbContext<ApplicationDbContext>();
+            services.AddEntityFrameworkSqlServer();
+            services.AddDbContext<ApplicationDbContext>(o => o.UseSqlServer(GetConnectionString()));
 
             services.AddCors(options =>
                 options.AddPolicy("AllowAll", p =>
@@ -51,6 +58,7 @@ namespace Calcular.CoreApi
 
             services.AddIdentity<User, IdentityRole>(options =>
             {
+                options.Cookies.ApplicationCookie.ExpireTimeSpan = new TimeSpan(12, 0, 0);
                 options.Cookies.ApplicationCookie.AutomaticChallenge = true;
                 options.Password.RequireLowercase = false;
                 options.Password.RequireUppercase = false;
@@ -66,7 +74,7 @@ namespace Calcular.CoreApi
                     }
                 };
             })
-            .AddEntityFrameworkStores<ApplicationDbContext>();
+                .AddEntityFrameworkStores<ApplicationDbContext>();
 
             services.AddMvc(config =>
                 {
@@ -96,5 +104,19 @@ namespace Calcular.CoreApi
             app.UseSwagger();
             app.UseSwaggerUi();
         }
+
+        #region Private Methods
+
+        private string GetConnectionString()
+        {
+            string cfUserDatabaseCredentials = !CurrentEnvironment.IsDevelopment() ? "vcap:services:user-provided:0:credentials" : string.Empty;
+
+            return string.Format(Configuration["ConnectionStrings:DefaultConnection"],
+                                 Configuration[cfUserDatabaseCredentials + "server"],
+                                 Configuration[cfUserDatabaseCredentials + "database"],
+                                 Configuration[cfUserDatabaseCredentials + "user"],
+                                 Configuration[cfUserDatabaseCredentials + "password"]);
+        }
+        #endregion
     }
 }
