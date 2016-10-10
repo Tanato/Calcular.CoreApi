@@ -109,7 +109,7 @@ namespace Calcular.CoreApi
 
         private string GetConnectionString()
         {
-            string cfUserDatabaseCredentials = !CurrentEnvironment.IsDevelopment() ? "vcap:services:user-provided:0:credentials" : string.Empty;
+            string cfUserDatabaseCredentials = !CurrentEnvironment.IsDevelopment() ? "vcap:services:user-provided:0:credentials:" : string.Empty;
 
             return string.Format(Configuration["ConnectionStrings:DefaultConnection"],
                                  Configuration[cfUserDatabaseCredentials + "server"],
