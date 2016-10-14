@@ -6,7 +6,7 @@
   </PropertyGroup>
   <Import Project="$(VSToolsPath)\DotNet\Microsoft.DotNet.Props" Condition="'$(VSToolsPath)' != ''" />
   <PropertyGroup Label="Globals">
-    <ProjectGuid>abaeb630-0e2b-4b2b-8f2f-a5eae3734733</ProjectGuid>
+    <ProjectGuid>35f754de-e9dc-4049-81c4-5df7fd7a50eb</ProjectGuid>
     <RootNamespace>Calcular.CoreApi</RootNamespace>
     <BaseIntermediateOutputPath Condition="'$(BaseIntermediateOutputPath)'=='' ">.\obj</BaseIntermediateOutputPath>
     <OutputPath Condition="'$(OutputPath)'=='' ">.\bin\</OutputPath>
