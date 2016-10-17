@@ -4,7 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
-using Calcular.CoreApi.Models;
+using Calcular.CoreApi.Models.Business;
 using Newtonsoft.Json;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -19,6 +19,7 @@ using Newtonsoft.Json.Linq;
 using System.Linq;
 using Steeltoe.Extensions.Configuration;
 using Swashbuckle.Swagger.Model;
+using Calcular.CoreApi.Models;
 
 namespace Calcular.CoreApi
 {

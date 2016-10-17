@@ -1,4 +1,5 @@
 ﻿using Calcular.CoreApi.Models;
+using Calcular.CoreApi.Models.Business;
 using Calcular.CoreApi.Models.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
