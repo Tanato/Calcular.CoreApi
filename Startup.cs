@@ -1,25 +1,20 @@
+using Calcular.CoreApi.Migrations;
+using Calcular.CoreApi.Models;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc.Authorization;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.EntityFrameworkCore;
-using Calcular.CoreApi.Models.Business;
 using Newtonsoft.Json;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-using System.Threading.Tasks;
-using System;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc.Authorization;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using System.Net;
-using Calcular.CoreApi.Migrations;
-using Newtonsoft.Json.Linq;
-using System.Linq;
 using Steeltoe.Extensions.Configuration;
-using Swashbuckle.Swagger.Model;
-using Calcular.CoreApi.Models;
+using System;
+using System.Net;
+using System.Threading.Tasks;
 
 namespace Calcular.CoreApi
 {
@@ -47,8 +42,16 @@ namespace Calcular.CoreApi
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddEntityFrameworkSqlServer();
-            services.AddDbContext<ApplicationDbContext>(o => o.UseSqlServer(GetConnectionString()));
+            if (CurrentEnvironment.IsDevelopment())
+            {
+                services.AddEntityFrameworkSqlite();
+                services.AddDbContext<ApplicationDbContext>(o => o.UseSqlite("Filename=./Calcular.Core.db"));
+            }
+            else
+            {
+                services.AddEntityFrameworkSqlServer();
+                services.AddDbContext<ApplicationDbContext>(o => o.UseSqlServer(GetConnectionString()));
+            }
 
             services.AddCors(options =>
                 options.AddPolicy("AllowAll", p =>
