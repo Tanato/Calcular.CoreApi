@@ -8,8 +8,8 @@ using Calcular.CoreApi.Models;
 namespace Calcular.CoreApi.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20161018121211_Initial")]
-    partial class Initial
+    [Migration("20161026192005_v0.0.1")]
+    partial class v001
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -72,6 +72,8 @@ namespace Calcular.CoreApi.Migrations
                     b.Property<DateTime>("Nascimento");
 
                     b.Property<string>("Nome");
+
+                    b.Property<int>("Perfil");
 
                     b.Property<string>("Telefone");
 
@@ -187,7 +189,7 @@ namespace Calcular.CoreApi.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("TipoAtividiades");
+                    b.ToTable("TipoAtividades");
                 });
 
             modelBuilder.Entity("Calcular.CoreApi.Models.Log", b =>

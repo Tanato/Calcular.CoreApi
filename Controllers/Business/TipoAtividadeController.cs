@@ -17,9 +17,10 @@ namespace Calcular.CoreApi.Controllers.Business
             this.db = db;
         }
         
+        [HttpGet]
         public IActionResult GetAll()
         {
-            return Ok(db.TipoAtividiades.ToList());
+            return Ok(db.TipoAtividades.ToList());
         }
     }
 }

@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Calcular.CoreApi.Models.Business
+namespace Calcular.CoreApi.Models.ViewModels
 {
-    public class Cliente
+    public class ClienteViewModel
     {
         public int Id { get; set; }
         public string Nome { get; set; }
@@ -15,11 +15,10 @@ namespace Calcular.CoreApi.Models.Business
         public string Telefone { get; set; }
         public string Celular { get; set; }
         public DateTime Nascimento { get; set; }
-        public PerfilEnum Perfil { get; set; }
         public string Empresa { get; set; }
         public decimal Honorarios { get; set; }
         public ComoChegouEnum ComoChegou { get; set; }
         public string ComoChegouDetalhe { get; set; }
-        public int Processos { get { return 0; } }
+        public string Processos { get; set; }
     }
 }

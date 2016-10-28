@@ -72,6 +72,8 @@ namespace Calcular.CoreApi.Migrations
 
                     b.Property<string>("Nome");
 
+                    b.Property<int>("Perfil");
+
                     b.Property<string>("Telefone");
 
                     b.HasKey("Id");
@@ -186,7 +188,7 @@ namespace Calcular.CoreApi.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("TipoAtividiades");
+                    b.ToTable("TipoAtividades");
                 });
 
             modelBuilder.Entity("Calcular.CoreApi.Models.Log", b =>

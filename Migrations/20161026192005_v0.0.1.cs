@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Calcular.CoreApi.Migrations
 {
-    public partial class Initial : Migration
+    public partial class v001 : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -23,6 +23,7 @@ namespace Calcular.CoreApi.Migrations
                     Honorarios = table.Column<decimal>(nullable: false),
                     Nascimento = table.Column<DateTime>(nullable: false),
                     Nome = table.Column<string>(nullable: true),
+                    Perfil = table.Column<int>(nullable: false),
                     Telefone = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
@@ -31,7 +32,7 @@ namespace Calcular.CoreApi.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "TipoAtividiades",
+                name: "TipoAtividades",
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
@@ -40,7 +41,7 @@ namespace Calcular.CoreApi.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_TipoAtividiades", x => x.Id);
+                    table.PrimaryKey("PK_TipoAtividades", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -336,9 +337,9 @@ namespace Calcular.CoreApi.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Atividades_TipoAtividiades_TipoAtividadeId",
+                        name: "FK_Atividades_TipoAtividades_TipoAtividadeId",
                         column: x => x.TipoAtividadeId,
-                        principalTable: "TipoAtividiades",
+                        principalTable: "TipoAtividades",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -461,7 +462,7 @@ namespace Calcular.CoreApi.Migrations
                 name: "Servicos");
 
             migrationBuilder.DropTable(
-                name: "TipoAtividiades");
+                name: "TipoAtividades");
 
             migrationBuilder.DropTable(
                 name: "Roles");

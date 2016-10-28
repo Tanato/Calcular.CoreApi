@@ -10,7 +10,7 @@ namespace Calcular.CoreApi.Models
         public ApplicationDbContext(DbContextOptions options) : base(options) { }
 
         public DbSet<Atividade> Atividades { get; set; }
-        public DbSet<TipoAtividade> TipoAtividiades { get; set; }
+        public DbSet<TipoAtividade> TipoAtividades { get; set; }
         public DbSet<Processo> Processos { get; set; }
         public DbSet<Cliente> Clientes { get; set; }
         public DbSet<Servico> Servicos { get; set; }
