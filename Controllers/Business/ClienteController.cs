@@ -10,6 +10,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Reflection;
 using Calcular.CoreApi.Models.Business;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Calcular.CoreApi.Controllers.Business
 {
@@ -43,12 +44,20 @@ namespace Calcular.CoreApi.Controllers.Business
         }
 
         [HttpPost]
+        [AllowAnonymous]
         public IActionResult PostCliente([FromBody] Cliente cliente)
         {
             cliente.Nascimento = cliente.Nascimento.Date.AddHours(12);
-            db.Clientes.Add(cliente);
-            db.SaveChanges();
-            return Ok();
+            try
+            {
+                db.Clientes.Add(cliente);
+                db.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            return Ok(cliente);
         }
 
         [HttpPut]
@@ -68,6 +77,15 @@ namespace Calcular.CoreApi.Controllers.Business
             item.ComoChegou = newItem.ComoChegou;
             item.ComoChegouDetalhe = newItem.ComoChegouDetalhe;
 
+            db.SaveChanges();
+            return Ok(item);
+        }
+
+        [HttpDelete("{id}")]
+        public IActionResult PutCliente(int id)
+        {
+            var item = db.Clientes.Single(x => x.Id == id);
+            db.Clientes.Remove(item);
             db.SaveChanges();
             return Ok(item);
         }

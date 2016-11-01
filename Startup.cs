@@ -3,7 +3,9 @@ using Calcular.CoreApi.Models;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
@@ -44,8 +46,13 @@ namespace Calcular.CoreApi
         {
             if (CurrentEnvironment.IsDevelopment())
             {
-                services.AddEntityFrameworkSqlite();
-                services.AddDbContext<ApplicationDbContext>(o => o.UseSqlite("Filename=./Calcular.Core.db"));
+                //services.AddEntityFrameworkSqlite();
+                //services.AddDbContext<ApplicationDbContext>(o => o.UseSqlite("Filename=./Calcular.Core.db"));
+
+                var sqlconn = "Server=tcp:cartaxo.database.windows.net,1433;Initial Catalog=Calcular.CoreSql;Persist Security Info=False;User ID=Tanato;Password=dick$#4rp34;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;";
+
+                services.AddEntityFrameworkSqlServer();
+                services.AddDbContext<ApplicationDbContext>(o => o.UseSqlServer(sqlconn));
             }
             else
             {
@@ -54,7 +61,7 @@ namespace Calcular.CoreApi
             }
 
             services.AddCors(options =>
-                options.AddPolicy("AllowAll", p =>
+                options.AddPolicy("CorsPolicy", p =>
                     p.AllowAnyOrigin()
                      .AllowAnyMethod()
                      .AllowAnyHeader()
@@ -99,7 +106,22 @@ namespace Calcular.CoreApi
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
 
-            app.UseCors("AllowAll");
+            app.UseCors("CorsPolicy");
+
+            app.UseExceptionHandler(options =>
+            {
+                options.Run(async context =>
+                {
+                    context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                    context.Response.ContentType = "text/html";
+                    var ex = context.Features.Get<IExceptionHandlerFeature>();
+                    if (ex != null)
+                    {
+                        var err = $"<h3>Error: {ex.Error.Message}</h3>{ex.Error.StackTrace }";
+                        await context.Response.WriteAsync(err).ConfigureAwait(false);
+                    }
+                });
+            });
 
             app.UseIdentity();
 
