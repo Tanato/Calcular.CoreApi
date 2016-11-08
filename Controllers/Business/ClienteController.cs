@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using System.Reflection;
 using Calcular.CoreApi.Models.Business;
 using Microsoft.AspNetCore.Authorization;
+using System.Globalization;
 
 namespace Calcular.CoreApi.Controllers.Business
 {
@@ -27,10 +28,11 @@ namespace Calcular.CoreApi.Controllers.Business
         [HttpGet]
         public IActionResult GetAll([FromQuery] string filter)
         {
+            var culture = CultureInfo.CurrentCulture;
             var result = db.Clientes.Where(x => string.IsNullOrEmpty(filter)
-                                             || x.Nome.Contains(filter)
+                                             || x.Nome.ContainsIgnoreNonSpacing(filter)
                                              || x.Email.Contains(filter)
-                                             || x.Empresa.Contains(filter)
+                                             || x.Empresa.ContainsIgnoreNonSpacing(filter)
                                              || x.Celular.Contains(filter));
 
             return Ok(result.ToList());
@@ -44,7 +46,6 @@ namespace Calcular.CoreApi.Controllers.Business
         }
 
         [HttpPost]
-        [AllowAnonymous]
         public IActionResult PostCliente([FromBody] Cliente cliente)
         {
             cliente.Nascimento = cliente.Nascimento.Date.AddHours(12);
@@ -82,7 +83,7 @@ namespace Calcular.CoreApi.Controllers.Business
         }
 
         [HttpDelete("{id}")]
-        public IActionResult PutCliente(int id)
+        public IActionResult DeleteCliente(int id)
         {
             var item = db.Clientes.Single(x => x.Id == id);
             db.Clientes.Remove(item);
@@ -107,7 +108,7 @@ namespace Calcular.CoreApi.Controllers.Business
             var result = Enum.GetValues(typeof(ComoChegouEnum))
                             .Cast<ComoChegouEnum>()
                             .Select(x => new KeyValuePair<int, string>((int)x, EnumHelpers.GetEnumDescription(x)));
-            return Ok(result);  
+            return Ok(result);
         }
     }
 }

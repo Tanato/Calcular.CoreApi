@@ -8,11 +8,12 @@ namespace Calcular.CoreApi.Models.Business
     {
         public int Id { get; set; }
         public string Numero { get; set; }
-        public string Reclamante { get; set; }
-        public string Reclamada { get; set; }
+        public string Autor { get; set; }
+        public string Reu { get; set; }
         public LocalEnum Local { get; set; }
         public ParteEnum Parte { get; set; }
         public string Advogado { get; set; }
+        public int NumeroAutores { get; set; }
 
         public int PeritoId { get; set; }
         public User Perito { get; set; }

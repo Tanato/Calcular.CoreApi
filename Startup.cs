@@ -46,10 +46,7 @@ namespace Calcular.CoreApi
         {
             if (CurrentEnvironment.IsDevelopment())
             {
-                //services.AddEntityFrameworkSqlite();
-                //services.AddDbContext<ApplicationDbContext>(o => o.UseSqlite("Filename=./Calcular.Core.db"));
-
-                var sqlconn = "Server=tcp:cartaxo.database.windows.net,1433;Initial Catalog=Calcular.CoreSql;Persist Security Info=False;User ID=Tanato;Password=dick$#4rp34;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;";
+                var sqlconn = @"Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=Calcular.CoreSql;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=True;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
 
                 services.AddEntityFrameworkSqlServer();
                 services.AddDbContext<ApplicationDbContext>(o => o.UseSqlServer(sqlconn));
@@ -108,23 +105,10 @@ namespace Calcular.CoreApi
 
             app.UseCors("CorsPolicy");
 
-            app.UseExceptionHandler(options =>
-            {
-                options.Run(async context =>
-                {
-                    context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-                    context.Response.ContentType = "text/html";
-                    var ex = context.Features.Get<IExceptionHandlerFeature>();
-                    if (ex != null)
-                    {
-                        var err = $"<h3>Error: {ex.Error.Message}</h3>{ex.Error.StackTrace }";
-                        await context.Response.WriteAsync(err).ConfigureAwait(false);
-                    }
-                });
-            });
-
             app.UseIdentity();
 
+
+            app.UseExceptionHandler();
             app.UseMvc();
 
             app.UseSwagger();

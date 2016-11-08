@@ -1,6 +1,6 @@
 ﻿applications:
 - path: .
-  memory: 256M
+  memory: 480M
   instances: 1
   domain: mybluemix.net
   name: Calcular.CoreApi
