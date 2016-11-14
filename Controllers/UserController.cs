@@ -25,15 +25,23 @@ namespace Calcular.CoreApi.Controllers
         [HttpGet]
         public IActionResult Get()
         {
-            var users = db.Users.Include(x => x.Roles);
+            var users = db.Users.Include(x => x.Roles).OrderBy(x => x.UserName);
             return Ok(users);
         }
 
         [HttpGet("{id}")]
-        public IActionResult Get(int id)
+        public IActionResult Get(string id)
         {
             var user = db.Users.Include(x => x.Roles).SingleOrDefault(x => x.Id.Equals(id));
-            return Ok(new { Name = user.Name, BirthDate = user.BirthDate, Email = user.Email, Login = user.UserName });
+            if (user != null)
+            {
+                return Ok(new { UserName = user.UserName, Name = user.Name, BirthDate = user.BirthDate, Email = user.Email, Login = user.UserName });
+                // ToDo: Adicionar retorno de perfis
+            }
+            else
+            {
+                return BadRequest();
+            }
         }
 
         [HttpPost("{userId}")]
