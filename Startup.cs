@@ -95,7 +95,7 @@ namespace Calcular.CoreApi
 
             services.AddSwaggerGen();
         }
-
+        
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
             app.EnsureSeedIdentity();

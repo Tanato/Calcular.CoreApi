@@ -26,7 +26,7 @@ namespace Calcular.CoreApi.Controllers.Business
                                              || x.Numero.Contains(filter)
                                              || x.Reu.Contains(filter)
                                              || x.Autor.Contains(filter)
-                                             || x.Advogado.Contains(filter));
+                                             || x.Advogado.Nome.Contains(filter));
 
             return Ok(result.ToList());
         }
@@ -63,8 +63,8 @@ namespace Calcular.CoreApi.Controllers.Business
             item.Reu = newItem.Reu;
             item.Local = newItem.Local;
             item.Parte = newItem.Parte;
-            item.Advogado = newItem.Advogado;
-            item.PeritoId = newItem.PeritoId;
+            item.AdvogadoId = newItem.AdvogadoId;
+            item.IndicacaoId = newItem.IndicacaoId;
             item.Honorario = newItem.Honorario;
 
             db.SaveChanges();
@@ -86,7 +86,7 @@ namespace Calcular.CoreApi.Controllers.Business
         {
             var result = Enum.GetValues(typeof(LocalEnum))
                             .Cast<LocalEnum>()
-                            .Select(x => new { Id = (int)x, Text = EnumHelpers.GetEnumDescription(x) });
+                            .Select(x => new KeyValuePair<int, string>((int)x, EnumHelpers.GetEnumDescription(x)));
             return Ok(result);
         }
 
@@ -96,7 +96,7 @@ namespace Calcular.CoreApi.Controllers.Business
         {
             var result = Enum.GetValues(typeof(ParteEnum))
                             .Cast<ParteEnum>()
-                            .Select(x => new { Id = (int)x, Text = EnumHelpers.GetEnumDescription(x) });
+                            .Select(x => new KeyValuePair<int, string>((int)x, EnumHelpers.GetEnumDescription(x)));
             return Ok(result);  
         }
     }

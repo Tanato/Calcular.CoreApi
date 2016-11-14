@@ -28,14 +28,32 @@ namespace Calcular.CoreApi.Controllers.Business
         [HttpGet]
         public IActionResult GetAll([FromQuery] string filter)
         {
-            var culture = CultureInfo.CurrentCulture;
             var result = db.Clientes.Where(x => string.IsNullOrEmpty(filter)
                                              || x.Nome.ContainsIgnoreNonSpacing(filter)
                                              || x.Email.Contains(filter)
                                              || x.Empresa.ContainsIgnoreNonSpacing(filter)
-                                             || x.Celular.Contains(filter));
+                                             || x.Celular.Contains(filter))
+                                    .OrderBy(x => x.Nome);
 
             return Ok(result.ToList());
+        }
+
+        [HttpGet("select")]
+        public IActionResult GetKeyValue([FromQuery] string filter)
+        {
+            var result = db.Clientes.Where(x => string.IsNullOrEmpty(filter)
+                                             || x.Nome.ContainsIgnoreNonSpacing(filter))
+                                    .OrderBy(x => x.Nome)
+                                    .Select(x => new KeyValuePair<int, string>(x.Id, x.Nome)).ToList();
+
+            return Ok(result);
+        }
+
+        [HttpGet("select/{id}")]
+        public IActionResult GetKeyValue(int id)
+        {
+            var result = db.Clientes.Select(x => new KeyValuePair<int, string>(x.Id, x.Nome)).Single(x => x.Key == id);
+            return Ok(result);
         }
 
         [HttpGet("{id}")]
@@ -70,13 +88,16 @@ namespace Calcular.CoreApi.Controllers.Business
             item.Email = newItem.Email;
             item.Endereco = newItem.Endereco;
             item.Telefone = newItem.Telefone;
+            item.Telefone2 = newItem.Telefone2;
             item.Celular = newItem.Celular;
+            item.Celular2 = newItem.Celular2;
             item.Nascimento = newItem.Nascimento.Date.AddHours(12);
             item.Perfil = newItem.Perfil;
             item.Empresa = newItem.Empresa;
             item.Honorarios = newItem.Honorarios;
             item.ComoChegou = newItem.ComoChegou;
             item.ComoChegouDetalhe = newItem.ComoChegouDetalhe;
+            item.Observacao = newItem.Observacao;
 
             db.SaveChanges();
             return Ok(item);
@@ -108,6 +129,19 @@ namespace Calcular.CoreApi.Controllers.Business
             var result = Enum.GetValues(typeof(ComoChegouEnum))
                             .Cast<ComoChegouEnum>()
                             .Select(x => new KeyValuePair<int, string>((int)x, EnumHelpers.GetEnumDescription(x)));
+            return Ok(result);
+        }
+
+        [HttpGet("company/{filter?}")]
+        public IActionResult GetExistingCompany([FromQuery] string filter = "")
+        {
+            var result = db.Clientes.Where(x => string.IsNullOrEmpty(filter)
+                                             || x.Empresa.ContainsIgnoreNonSpacing(filter))
+                                    .Select(x => x.Empresa)
+                                    .Distinct()
+                                    .OrderBy(x => x)
+                                    .ToList();
+
             return Ok(result);
         }
     }

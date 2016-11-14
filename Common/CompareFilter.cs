@@ -11,7 +11,7 @@ namespace System
             if (string.IsNullOrEmpty(value))
                 return false;
 
-            return CultureInfo.CurrentCulture.CompareInfo.IndexOf(filter, value, CompareOptions.IgnoreCase | CompareOptions.IgnoreNonSpace) >= 0;
+            return CultureInfo.CurrentCulture.CompareInfo.IndexOf(value, filter, CompareOptions.IgnoreCase | CompareOptions.IgnoreNonSpace) >= 0;
         }
     }
 }

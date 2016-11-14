@@ -12,13 +12,18 @@ namespace Calcular.CoreApi.Models.Business
         public string Reu { get; set; }
         public LocalEnum Local { get; set; }
         public ParteEnum Parte { get; set; }
-        public string Advogado { get; set; }
         public int NumeroAutores { get; set; }
 
-        public int PeritoId { get; set; }
-        public User Perito { get; set; }
+        public int AdvogadoId { get; set; }
+        public Cliente Advogado { get; set; }
 
-        public decimal Honorario { get; set; }
+        //public int? PeritoId { get; set; }
+        //public User Perito { get; set; }
+        
+        public int? IndicacaoId { get; set; }
+        public User Indicacao { get; set; }
+
+        public decimal? Honorario { get; set; }
         public DateTime CreatedAt { get; set; }
 
         public List<ProcessoDetalhe> ProcessoDetalhes { get; set; }
