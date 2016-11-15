@@ -29,7 +29,7 @@ namespace Calcular.CoreApi.Migrations
 
             if (!context.Users.Any())
             {
-                var userResult = await userManager.CreateAsync(new User { UserName = "Admin" }, "123Admin");
+                var userResult = await userManager.CreateAsync(new User { Name = "Tanato Cartaxo", UserName = "Admin" }, "123Admin");
 
                 if (userResult.Succeeded)
                 {

@@ -1,24 +1,22 @@
+using Calcular.CoreApi.Migrations;
+using Calcular.CoreApi.Models;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc.Authorization;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.EntityFrameworkCore;
-using Calcular.CoreApi.Models;
 using Newtonsoft.Json;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-using System.Threading.Tasks;
-using System;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc.Authorization;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using System.Net;
-using Calcular.CoreApi.Migrations;
-using Newtonsoft.Json.Linq;
-using System.Linq;
 using Steeltoe.Extensions.Configuration;
-using Swashbuckle.Swagger.Model;
+using System;
+using System.Net;
+using System.Threading.Tasks;
 
 namespace Calcular.CoreApi
 {
@@ -46,11 +44,21 @@ namespace Calcular.CoreApi
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddEntityFrameworkSqlServer();
-            services.AddDbContext<ApplicationDbContext>(o => o.UseSqlServer(GetConnectionString()));
+            if (CurrentEnvironment.IsDevelopment())
+            {
+                var sqlconn = @"Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=Calcular.CoreSql;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=True;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
+
+                services.AddEntityFrameworkSqlServer();
+                services.AddDbContext<ApplicationDbContext>(o => o.UseSqlServer(sqlconn));
+            }
+            else
+            {
+                services.AddEntityFrameworkSqlServer();
+                services.AddDbContext<ApplicationDbContext>(o => o.UseSqlServer(GetConnectionString()));
+            }
 
             services.AddCors(options =>
-                options.AddPolicy("AllowAll", p =>
+                options.AddPolicy("CorsPolicy", p =>
                     p.AllowAnyOrigin()
                      .AllowAnyMethod()
                      .AllowAnyHeader()
@@ -87,7 +95,7 @@ namespace Calcular.CoreApi
 
             services.AddSwaggerGen();
         }
-
+        
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
             app.EnsureSeedIdentity();
@@ -95,10 +103,12 @@ namespace Calcular.CoreApi
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
 
-            app.UseCors("AllowAll");
+            app.UseCors("CorsPolicy");
 
             app.UseIdentity();
 
+
+            app.UseExceptionHandler();
             app.UseMvc();
 
             app.UseSwagger();

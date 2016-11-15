@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 
 namespace Calcular.CoreApi.Controllers
 {
-    [AllowAnonymous]
     [Route("api/[controller]")]
     public class TestController : Controller
     {

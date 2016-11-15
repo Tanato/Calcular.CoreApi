@@ -1,4 +1,5 @@
 ﻿using Calcular.CoreApi.Models;
+using Calcular.CoreApi.Models.Business;
 using Calcular.CoreApi.Models.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
@@ -16,11 +17,13 @@ namespace MovieAngularJSApp.Controllers
     {
         private UserManager<User> userManager;
         private SignInManager<User> signInManager;
+        private readonly ApplicationDbContext db;
 
-        public AccountController(UserManager<User> userManager, SignInManager<User> signInManager)
+        public AccountController(UserManager<User> userManager, SignInManager<User> signInManager, ApplicationDbContext db)
         {
             this.userManager = userManager;
             this.signInManager = signInManager;
+            this.db = db;
         }
 
         [HttpPost("login")]
@@ -41,8 +44,37 @@ namespace MovieAngularJSApp.Controllers
         {
             if (ModelState.IsValid)
             {
-                var user = new User { Name = model.Name, UserName = model.UserName, Email = model.Email, BirthDate = model.BirthDate };
+                var user = new User { Name = model.Name, UserName = model.UserName, Email = model.Email, BirthDate = model.BirthDate.Date.AddHours(12) };
                 var result = await userManager.CreateAsync(user, "password123");
+                if (result.Succeeded)
+                {
+                    return Ok();
+                }
+                else
+                {
+                    var error = result.Errors.FirstOrDefault();
+                    ModelState.AddModelError(error.Code, error.Description);
+                    return BadRequest(result.Errors.FirstOrDefault().Description);
+                }
+            }
+
+            return BadRequest(model);
+        }
+
+        [HttpPut("register")]
+        public async Task<IActionResult> Put([FromBody] RegisterViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var user = db.Users.Single(x => x.UserName == model.UserName);
+
+                user.Email = model.Email;
+                user.BirthDate = model.BirthDate.Date.AddHours(12);
+                user.Name = model.Name;
+
+                // ToDo: Update user profiles
+
+                var result = await userManager.UpdateAsync(user);
                 if (result.Succeeded)
                 {
                     return Ok();
@@ -77,7 +109,7 @@ namespace MovieAngularJSApp.Controllers
                 }
             }
 
-            return BadRequest(model);
+            return BadRequest(string.Join(Environment.NewLine, ModelState.Values.SelectMany(v => v.Errors).Select(x => x.ErrorMessage)));
         }
 
         [HttpGet("logout")]

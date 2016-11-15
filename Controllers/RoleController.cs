@@ -1,9 +1,10 @@
 using System.Collections.Generic;
 using System.Linq;
-using Calcular.CoreApi.Models;
+using Calcular.CoreApi.Models.Business;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
+using Calcular.CoreApi.Models;
 
 namespace Calcular.CoreApi.Controllers
 {
