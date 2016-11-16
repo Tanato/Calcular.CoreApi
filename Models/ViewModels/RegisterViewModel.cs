@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace Calcular.CoreApi.Models.ViewModels
@@ -21,5 +23,7 @@ namespace Calcular.CoreApi.Models.ViewModels
         [Required]
         [Display(Name = "BirthDate")]
         public DateTime BirthDate { get; set; }
+
+        public IEnumerable<string> Roles { get; set; }
     }
 }

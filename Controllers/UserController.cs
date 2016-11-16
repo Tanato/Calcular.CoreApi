@@ -35,8 +35,16 @@ namespace Calcular.CoreApi.Controllers
             var user = db.Users.Include(x => x.Roles).SingleOrDefault(x => x.Id.Equals(id));
             if (user != null)
             {
-                return Ok(new { UserName = user.UserName, Name = user.Name, BirthDate = user.BirthDate, Email = user.Email, Login = user.UserName });
-                // ToDo: Adicionar retorno de perfis
+                var result = new
+                {
+                    UserName = user.UserName,
+                    Name = user.Name,
+                    BirthDate = user.BirthDate,
+                    Email = user.Email,
+                    Login = user.UserName,
+                    Roles = user.Roles.Select(x => x.RoleId),
+                };
+                return Ok(result);
             }
             else
             {

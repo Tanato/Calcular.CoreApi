@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Calcular.CoreApi.Migrations
@@ -24,7 +25,10 @@ namespace Calcular.CoreApi.Migrations
 
             if (!context.Roles.Any())
             {
-                await roleManager.CreateAsync(new IdentityRole { Name = "Admin" });
+                await roleManager.CreateAsync(new IdentityRole { Name = "Administrativo" });
+                await roleManager.CreateAsync(new IdentityRole { Name = "Calculista" });
+                await roleManager.CreateAsync(new IdentityRole { Name = "Revisor" });
+                await roleManager.CreateAsync(new IdentityRole { Name = "Gerencial" });
             }
 
             if (!context.Users.Any())
@@ -37,7 +41,7 @@ namespace Calcular.CoreApi.Migrations
 
                     if (AdminUser != null && roleManager.RoleExistsAsync("Admin").Result)
                     {
-                        await userManager.AddToRoleAsync(AdminUser, "Admin");
+                        await userManager.AddToRolesAsync(AdminUser, new string[] { "Administrativo", "Calculista", "Revisor", "Gerencial" });
                     }
                 }
             }

@@ -15,8 +15,8 @@ namespace MovieAngularJSApp.Controllers
     [Route("api/[controller]")]
     public class AccountController : Controller
     {
-        private UserManager<User> userManager;
-        private SignInManager<User> signInManager;
+        private readonly UserManager<User> userManager;
+        private readonly SignInManager<User> signInManager;
         private readonly ApplicationDbContext db;
 
         public AccountController(UserManager<User> userManager, SignInManager<User> signInManager, ApplicationDbContext db)
@@ -45,7 +45,12 @@ namespace MovieAngularJSApp.Controllers
             if (ModelState.IsValid)
             {
                 var user = new User { Name = model.Name, UserName = model.UserName, Email = model.Email, BirthDate = model.BirthDate.Date.AddHours(12) };
-                var result = await userManager.CreateAsync(user, "password123");
+                var result =
+                    await userManager.CreateAsync(user, "password123");
+                
+                foreach (var role in model.Roles)
+                    await userManager.AddToRoleAsync(user, db.Roles.Single(x => x.Id == role).Name);
+
                 if (result.Succeeded)
                 {
                     return Ok();
@@ -66,13 +71,16 @@ namespace MovieAngularJSApp.Controllers
         {
             if (ModelState.IsValid)
             {
-                var user = db.Users.Single(x => x.UserName == model.UserName);
+                var user = await userManager.FindByNameAsync(model.UserName);
+                var userRoles = await userManager.GetRolesAsync(user);
+
+                await userManager.RemoveFromRolesAsync(user, userRoles);
+                foreach (var role in model.Roles)
+                    await userManager.AddToRoleAsync(user, db.Roles.Single(x => x.Id == role).Name);
 
                 user.Email = model.Email;
                 user.BirthDate = model.BirthDate.Date.AddHours(12);
                 user.Name = model.Name;
-
-                // ToDo: Update user profiles
 
                 var result = await userManager.UpdateAsync(user);
                 if (result.Succeeded)
