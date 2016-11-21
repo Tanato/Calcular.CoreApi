@@ -13,6 +13,7 @@ namespace Calcular.CoreApi.Models.Business
         public LocalEnum Local { get; set; }
         public ParteEnum Parte { get; set; }
         public int NumeroAutores { get; set; }
+        public string Vara { get; set; }
 
         public int AdvogadoId { get; set; }
         public Cliente Advogado { get; set; }

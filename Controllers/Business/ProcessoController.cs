@@ -2,7 +2,9 @@
 using Calcular.CoreApi.Models.Business;
 using Calcular.CoreApi.Shared;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,10 +15,12 @@ namespace Calcular.CoreApi.Controllers.Business
     public class ProcessoController : Controller
     {
         private readonly ApplicationDbContext db;
+        private readonly UserManager<User> userManager;
 
-        public ProcessoController(ApplicationDbContext db)
+        public ProcessoController(UserManager<User> userManager, ApplicationDbContext db)
         {
             this.db = db;
+            this.userManager = userManager;
         }
 
         [HttpGet]
@@ -31,26 +35,70 @@ namespace Calcular.CoreApi.Controllers.Business
             return Ok(result.ToList());
         }
 
+        [HttpGet]
+        [Route("numero")]
+        public IActionResult GetByNumber([FromQuery] string filter)
+        {
+            var result = db.Processos
+                            .Include(x => x.Advogado)
+                            .Include(x => x.ProcessoDetalhes).ThenInclude(x => x.User)
+                            .Where(x => string.IsNullOrEmpty(filter)
+                                             || x.Numero.Contains(filter))
+                            .ToList();
+
+            return Ok(result);
+        }
+
         [HttpGet("{id}")]
         public IActionResult GetById(int id)
         {
-            var result = db.Processos.Single(x => x.Id == id);
+            var result = db.Processos
+                            .Include(x => x.Advogado)
+                            .Include(x => x.ProcessoDetalhes).ThenInclude(x => x.User)
+                            .SingleOrDefault(x => x.Id == id);
+
             return Ok(result);
         }
 
         [HttpPost]
-        public IActionResult PostProcesso([FromBody] Processo Processo)
+        public IActionResult PostProcesso([FromBody] Processo processo)
         {
             try
             {
-                db.Processos.Add(Processo);
+                db.Processos.Add(processo);
                 db.SaveChanges();
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
             }
-            return Ok(Processo);
+            return Ok(processo);
+        }
+
+        [HttpPost]
+        [Route("detalhe")]
+        public IActionResult PostProcessoDetalhe([FromBody] ProcessoDetalhe processoDetalhe)
+        {
+            try
+            {
+                var user = userManager.GetUserAsync(HttpContext.User).Result;
+                processoDetalhe.UserId = user.Id;
+                processoDetalhe.Data = DateTime.Now;
+
+                var processo = db.Processos
+                                .Include(x => x.ProcessoDetalhes)
+                                .Single(x => x.Id == processoDetalhe.ProcessoId);
+
+                processo.ProcessoDetalhes.Add(processoDetalhe);
+                db.SaveChanges();
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpPut]
@@ -63,6 +111,7 @@ namespace Calcular.CoreApi.Controllers.Business
             item.Reu = newItem.Reu;
             item.Local = newItem.Local;
             item.Parte = newItem.Parte;
+            item.Vara = newItem.Vara;
             item.AdvogadoId = newItem.AdvogadoId;
             item.IndicacaoId = newItem.IndicacaoId;
             item.Honorario = newItem.Honorario;

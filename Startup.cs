@@ -46,7 +46,9 @@ namespace Calcular.CoreApi
         {
             if (CurrentEnvironment.IsDevelopment())
             {
-                var sqlconn = @"Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=Calcular.CoreSql;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=True;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
+                var sqlconn = @"Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=Calcular.CoreSql;Integrated Security=True";
+
+                //var sqlconn = @"Server=localhost;Database=CalcularCoreSql;Trusted_Connection=True;";
 
                 services.AddEntityFrameworkSqlServer();
                 services.AddDbContext<ApplicationDbContext>(o => o.UseSqlServer(sqlconn));

@@ -16,6 +16,7 @@ namespace Calcular.CoreApi.Migrations
                     Id = table.Column<int>(nullable: false)
                         .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
                     Celular = table.Column<string>(nullable: true),
+                    Celular2 = table.Column<string>(nullable: true),
                     ComoChegou = table.Column<int>(nullable: false),
                     ComoChegouDetalhe = table.Column<string>(nullable: true),
                     Email = table.Column<string>(nullable: true),
@@ -24,8 +25,10 @@ namespace Calcular.CoreApi.Migrations
                     Honorarios = table.Column<decimal>(nullable: false),
                     Nascimento = table.Column<DateTime>(nullable: false),
                     Nome = table.Column<string>(nullable: true),
+                    Observacao = table.Column<string>(nullable: true),
                     Perfil = table.Column<int>(nullable: false),
-                    Telefone = table.Column<string>(nullable: true)
+                    Telefone = table.Column<string>(nullable: true),
+                    Telefone2 = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
                 {
@@ -107,23 +110,31 @@ namespace Calcular.CoreApi.Migrations
                 {
                     Id = table.Column<int>(nullable: false)
                         .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
-                    Advogado = table.Column<string>(nullable: true),
+                    AdvogadoId = table.Column<int>(nullable: false),
+                    Autor = table.Column<string>(nullable: true),
                     CreatedAt = table.Column<DateTime>(nullable: false),
-                    Honorario = table.Column<decimal>(nullable: false),
+                    Honorario = table.Column<decimal>(nullable: true),
+                    IndicacaoId = table.Column<int>(nullable: true),
+                    IndicacaoId1 = table.Column<string>(nullable: true),
                     Local = table.Column<int>(nullable: false),
                     Numero = table.Column<string>(nullable: true),
+                    NumeroAutores = table.Column<int>(nullable: false),
                     Parte = table.Column<int>(nullable: false),
-                    PeritoId = table.Column<int>(nullable: false),
-                    PeritoId1 = table.Column<string>(nullable: true),
-                    Reclamada = table.Column<string>(nullable: true),
-                    Reclamante = table.Column<string>(nullable: true)
+                    Reu = table.Column<string>(nullable: true),
+                    Vara = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Processos", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Processos_Users_PeritoId1",
-                        column: x => x.PeritoId1,
+                        name: "FK_Processos_Clientes_AdvogadoId",
+                        column: x => x.AdvogadoId,
+                        principalTable: "Clientes",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Processos_Users_IndicacaoId1",
+                        column: x => x.IndicacaoId1,
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
@@ -268,8 +279,10 @@ namespace Calcular.CoreApi.Migrations
                 {
                     Id = table.Column<int>(nullable: false)
                         .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                    Data = table.Column<DateTime>(nullable: false),
                     Descricao = table.Column<string>(nullable: true),
-                    ProcessoId = table.Column<int>(nullable: false)
+                    ProcessoId = table.Column<int>(nullable: false),
+                    UserId = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
                 {
@@ -280,6 +293,12 @@ namespace Calcular.CoreApi.Migrations
                         principalTable: "Processos",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ProcessoDetalhes_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -366,14 +385,24 @@ namespace Calcular.CoreApi.Migrations
                 column: "ProcessoId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Processos_PeritoId1",
+                name: "IX_Processos_AdvogadoId",
                 table: "Processos",
-                column: "PeritoId1");
+                column: "AdvogadoId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Processos_IndicacaoId1",
+                table: "Processos",
+                column: "IndicacaoId1");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ProcessoDetalhes_ProcessoId",
                 table: "ProcessoDetalhes",
                 column: "ProcessoId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProcessoDetalhes_UserId",
+                table: "ProcessoDetalhes",
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Servicos_ProcessoId",
@@ -433,9 +462,6 @@ namespace Calcular.CoreApi.Migrations
                 name: "Atividades");
 
             migrationBuilder.DropTable(
-                name: "Clientes");
-
-            migrationBuilder.DropTable(
                 name: "Honorarios");
 
             migrationBuilder.DropTable(
@@ -470,6 +496,9 @@ namespace Calcular.CoreApi.Migrations
 
             migrationBuilder.DropTable(
                 name: "Processos");
+
+            migrationBuilder.DropTable(
+                name: "Clientes");
 
             migrationBuilder.DropTable(
                 name: "Users");
