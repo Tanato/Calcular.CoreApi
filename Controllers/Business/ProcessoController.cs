@@ -1,4 +1,5 @@
-﻿using Calcular.CoreApi.Models;
+﻿using Calcular.CoreApi.Common;
+using Calcular.CoreApi.Models;
 using Calcular.CoreApi.Models.Business;
 using Calcular.CoreApi.Shared;
 using Microsoft.AspNetCore.Authorization;
@@ -26,7 +27,9 @@ namespace Calcular.CoreApi.Controllers.Business
         [HttpGet]
         public IActionResult GetAll([FromQuery] string filter)
         {
-            var result = db.Processos.Where(x => string.IsNullOrEmpty(filter)
+            var result = db.Processos
+                            .Include(x => x.Advogado)
+                            .Where(x => string.IsNullOrEmpty(filter)
                                              || x.Numero.Contains(filter)
                                              || x.Reu.Contains(filter)
                                              || x.Autor.Contains(filter)
@@ -135,7 +138,7 @@ namespace Calcular.CoreApi.Controllers.Business
         {
             var result = Enum.GetValues(typeof(LocalEnum))
                             .Cast<LocalEnum>()
-                            .Select(x => new KeyValuePair<int, string>((int)x, EnumHelpers.GetEnumDescription(x)));
+                            .Select(x => new { Key = (int)x, Value = EnumHelpers.GetEnumDescription(x), Mask = EnumHelpers.GetAttributeOfType<MaskAttribute>(x) });
             return Ok(result);
         }
 
