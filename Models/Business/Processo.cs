@@ -1,6 +1,7 @@
 ﻿using Calcular.CoreApi.Shared;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Calcular.CoreApi.Models.Business
 {
@@ -30,5 +31,21 @@ namespace Calcular.CoreApi.Models.Business
         public List<ProcessoDetalhe> ProcessoDetalhes { get; set; }
         public List<Honorario> Honorarios { get; set; }
         public List<Servico> Servicos { get; set; }
+
+        public decimal? Total
+        {
+            get
+            {
+                if (Honorarios != null && Honorarios.Count > 0)
+                {
+                    var positivo = Honorarios.Where(x => x.Registro == RegistroEnum.Honorario).Sum(x => x.Valor);
+                    var negativo = Honorarios.Where(x => x.Registro == RegistroEnum.Pagamento).Sum(x => x.Valor);
+
+                    return positivo - negativo;
+                }
+                else
+                    return null;
+            }
+        }
     }
 }
