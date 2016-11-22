@@ -47,5 +47,18 @@ namespace Calcular.CoreApi.Models.Business
                     return null;
             }
         }
+
+        public DateTime? Prazo
+        {
+            get
+            {
+                if (Honorarios != null && Honorarios.Count > 0)
+                {
+                    return Honorarios.Where(x => x.Registro == RegistroEnum.Honorario).Max(x => x.Prazo);
+                }
+                else
+                    return null;
+            }
+        }
     }
 }

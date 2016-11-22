@@ -6,7 +6,7 @@ namespace Calcular.CoreApi.Models.Business
     public class Atividade
     {
         public int Id { get; set; }
-        public string Name { get; set; }
+        public string Nome { get; set; }
         public DateTime Entrega { get; set; }
         public decimal Tempo { get; set; }
         public TipoImpressaoEnum TipoImpressao { get; set; }
@@ -20,6 +20,5 @@ namespace Calcular.CoreApi.Models.Business
 
         public int ResponsavelId { get; set; }
         public User Responsavel { get; set; }
-
     }
 }

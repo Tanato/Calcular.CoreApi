@@ -1,8 +1,6 @@
 ﻿using Calcular.CoreApi.Shared;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Calcular.CoreApi.Models.Business
 {
@@ -20,7 +18,5 @@ namespace Calcular.CoreApi.Models.Business
         public Processo Processo { get; set; }
 
         public List<Atividade> Atividades { get; set; }
-
-
     }
 }
