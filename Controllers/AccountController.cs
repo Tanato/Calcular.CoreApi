@@ -46,7 +46,7 @@ namespace MovieAngularJSApp.Controllers
             {
                 var user = new User { Name = model.Name, UserName = model.UserName, Email = model.Email, BirthDate = model.BirthDate.Date.AddHours(12) };
                 var result =
-                    await userManager.CreateAsync(user, "password123");
+                    await userManager.CreateAsync(user, "senha123");
                 
                 foreach (var role in model.Roles)
                     await userManager.AddToRoleAsync(user, db.Roles.Single(x => x.Id == role).Name);
