@@ -11,8 +11,8 @@ namespace Calcular.CoreApi.Models.Business
         public StatusEnum Status { get; set; }
         public int Volumes { get; set; }
         public DateTime Entrada { get; set; }
-        public DateTime Saida { get; set; }
-        public DateTime Prazo { get; set; }
+        public DateTime? Saida { get; set; }
+        public DateTime? Prazo { get; set; }
 
         public int ProcessoId { get; set; }
         public Processo Processo { get; set; }

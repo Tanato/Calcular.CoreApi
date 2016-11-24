@@ -38,7 +38,7 @@ namespace Calcular.CoreApi.Controllers.Business
         public IActionResult GetByNumber([FromQuery] string filter)
         {
             var result = db.Servicos
-                            .Include(x => x.Processo)
+                            .Include(x => x.Processo).ThenInclude(x => x.Advogado)
                             .Include(x => x.Atividades).ThenInclude(x => x.Responsavel)
                             .Where(x => string.IsNullOrEmpty(filter)
                                              || x.Processo.Numero.Contains(filter))
@@ -51,7 +51,7 @@ namespace Calcular.CoreApi.Controllers.Business
         public IActionResult GetById(int id)
         {
             var result = db.Servicos
-                            .Include(x => x.Processo)
+                            .Include(x => x.Processo).ThenInclude(x => x.Advogado)
                             .Include(x => x.Atividades).ThenInclude(x => x.Responsavel)
                             .SingleOrDefault(x => x.Id == id);
 
@@ -59,28 +59,35 @@ namespace Calcular.CoreApi.Controllers.Business
         }
 
         [HttpPost]
-        public IActionResult Post([FromBody] Servico servico)
+        public IActionResult Post([FromBody] Servico model)
         {
             try
             {
-                db.Servicos.Add(servico);
+                model.Processo = null;
+                db.Servicos.Add(model);
                 db.SaveChanges();
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                Console.WriteLine(ex.InnerException.Message);
+                return BadRequest(ex.InnerException.Message);
             }
-            return Ok(servico);
+
+            var result = db.Servicos
+                            .Include(x => x.Processo).ThenInclude(x => x.Advogado)
+                            .Single(x => x.Id == model.Id);
+            return Ok(result);
         }
 
         [HttpPut]
-        public IActionResult Put([FromBody] Servico newItem)
+        public IActionResult Put([FromBody] Servico model)
         {
-            var item = db.Servicos.Single(x => x.Id == newItem.Id);
+            var item = db.Servicos.Single(x => x.Id == model.Id);
 
-            item.Entrada = newItem.Entrada;
-            item.Prazo = newItem.Prazo;
-            item.Saida = newItem.Saida;
+            item.Volumes = model.Volumes;
+            item.Entrada = model.Entrada;
+            item.Prazo = model.Prazo;
+            item.Saida = model.Saida;
 
             db.SaveChanges();
             return Ok(item);
