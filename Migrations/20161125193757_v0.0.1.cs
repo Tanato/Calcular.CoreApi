@@ -17,16 +17,16 @@ namespace Calcular.CoreApi.Migrations
                         .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
                     Celular = table.Column<string>(nullable: true),
                     Celular2 = table.Column<string>(nullable: true),
-                    ComoChegou = table.Column<int>(nullable: false),
+                    ComoChegou = table.Column<int>(nullable: true),
                     ComoChegouDetalhe = table.Column<string>(nullable: true),
                     Email = table.Column<string>(nullable: true),
                     Empresa = table.Column<string>(nullable: true),
                     Endereco = table.Column<string>(nullable: true),
-                    Honorarios = table.Column<decimal>(nullable: false),
-                    Nascimento = table.Column<DateTime>(nullable: false),
+                    Honorarios = table.Column<decimal>(nullable: true),
+                    Nascimento = table.Column<DateTime>(nullable: true),
                     Nome = table.Column<string>(nullable: true),
                     Observacao = table.Column<string>(nullable: true),
-                    Perfil = table.Column<int>(nullable: false),
+                    Perfil = table.Column<int>(nullable: true),
                     Telefone = table.Column<string>(nullable: true),
                     Telefone2 = table.Column<string>(nullable: true)
                 },
@@ -256,7 +256,8 @@ namespace Calcular.CoreApi.Migrations
                         .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
                     Data = table.Column<DateTime>(nullable: false),
                     NotaFiscal = table.Column<string>(nullable: true),
-                    Prazo = table.Column<DateTime>(nullable: false),
+                    Observacao = table.Column<string>(nullable: true),
+                    Prazo = table.Column<DateTime>(nullable: true),
                     ProcessoId = table.Column<int>(nullable: false),
                     Registro = table.Column<int>(nullable: false),
                     TipoPagamento = table.Column<int>(nullable: false),
@@ -308,9 +309,9 @@ namespace Calcular.CoreApi.Migrations
                     Id = table.Column<int>(nullable: false)
                         .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
                     Entrada = table.Column<DateTime>(nullable: false),
-                    Prazo = table.Column<DateTime>(nullable: false),
+                    Prazo = table.Column<DateTime>(nullable: true),
                     ProcessoId = table.Column<int>(nullable: false),
-                    Saida = table.Column<DateTime>(nullable: false),
+                    Saida = table.Column<DateTime>(nullable: true),
                     Status = table.Column<int>(nullable: false),
                     Volumes = table.Column<int>(nullable: false)
                 },
@@ -331,22 +332,21 @@ namespace Calcular.CoreApi.Migrations
                 {
                     Id = table.Column<int>(nullable: false)
                         .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
-                    Entrega = table.Column<DateTime>(nullable: false),
-                    Name = table.Column<string>(nullable: true),
+                    Entrega = table.Column<DateTime>(nullable: true),
+                    Nome = table.Column<string>(nullable: true),
                     Observacao = table.Column<string>(nullable: true),
-                    ResponsavelId = table.Column<int>(nullable: false),
-                    ResponsavelId1 = table.Column<string>(nullable: true),
+                    ResponsavelId = table.Column<string>(nullable: true),
                     ServicoId = table.Column<int>(nullable: false),
-                    Tempo = table.Column<decimal>(nullable: false),
+                    Tempo = table.Column<decimal>(nullable: true),
                     TipoAtividadeId = table.Column<int>(nullable: false),
-                    TipoImpressao = table.Column<int>(nullable: false)
+                    TipoImpressao = table.Column<int>(nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Atividades", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Atividades_Users_ResponsavelId1",
-                        column: x => x.ResponsavelId1,
+                        name: "FK_Atividades_Users_ResponsavelId",
+                        column: x => x.ResponsavelId,
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
@@ -365,9 +365,9 @@ namespace Calcular.CoreApi.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Atividades_ResponsavelId1",
+                name: "IX_Atividades_ResponsavelId",
                 table: "Atividades",
-                column: "ResponsavelId1");
+                column: "ResponsavelId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Atividades_ServicoId",

@@ -40,6 +40,7 @@ namespace Calcular.CoreApi.Controllers.Business
             var result = db.Servicos
                             .Include(x => x.Processo).ThenInclude(x => x.Advogado)
                             .Include(x => x.Atividades).ThenInclude(x => x.Responsavel)
+                            .Include(x => x.Atividades).ThenInclude(x => x.TipoAtividade)
                             .Where(x => string.IsNullOrEmpty(filter)
                                              || x.Processo.Numero.Contains(filter))
                             .ToList();
@@ -53,6 +54,7 @@ namespace Calcular.CoreApi.Controllers.Business
             var result = db.Servicos
                             .Include(x => x.Processo).ThenInclude(x => x.Advogado)
                             .Include(x => x.Atividades).ThenInclude(x => x.Responsavel)
+                            .Include(x => x.Atividades).ThenInclude(x => x.TipoAtividade)
                             .SingleOrDefault(x => x.Id == id);
 
             return Ok(result);

@@ -11,7 +11,7 @@ namespace Calcular.CoreApi.Migrations
 {
     public static class DataSeed
     {
-        public static async void EnsureSeedIdentity(this IApplicationBuilder app)
+        public static async void EnsureSeedIdentityAsync(this IApplicationBuilder app)
         {
             var context = app.ApplicationServices.GetService<ApplicationDbContext>();
 

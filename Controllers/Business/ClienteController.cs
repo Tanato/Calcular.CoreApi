@@ -12,6 +12,7 @@ using System.Reflection;
 using Calcular.CoreApi.Models.Business;
 using Microsoft.AspNetCore.Authorization;
 using System.Globalization;
+using Microsoft.EntityFrameworkCore;
 
 namespace Calcular.CoreApi.Controllers.Business
 {
@@ -106,10 +107,21 @@ namespace Calcular.CoreApi.Controllers.Business
         [HttpDelete("{id}")]
         public IActionResult DeleteCliente(int id)
         {
-            var item = db.Clientes.Single(x => x.Id == id);
-            db.Clientes.Remove(item);
-            db.SaveChanges();
-            return Ok(item);
+            var item = db.Clientes
+                        .Include(x => x.Processos)
+                        .Include(x => x.Honorarios)
+                        .Single(x => x.Id == id);
+
+            if (item.Processos?.Count > 0)
+            {
+                return BadRequest("O processo possúi Honorários/Serviços associados e não pode ser excluído");
+            }
+            else
+            {
+                db.Clientes.Remove(item);
+                db.SaveChanges();
+                return Ok(item);
+            }
         }
 
         [Route("perfil")]

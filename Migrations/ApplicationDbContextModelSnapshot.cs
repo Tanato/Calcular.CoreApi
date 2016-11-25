@@ -21,27 +21,25 @@ namespace Calcular.CoreApi.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<DateTime>("Entrega");
+                    b.Property<DateTime?>("Entrega");
 
                     b.Property<string>("Nome");
 
                     b.Property<string>("Observacao");
 
-                    b.Property<int>("ResponsavelId");
-
-                    b.Property<string>("ResponsavelId1");
+                    b.Property<string>("ResponsavelId");
 
                     b.Property<int>("ServicoId");
 
-                    b.Property<decimal>("Tempo");
+                    b.Property<decimal?>("Tempo");
 
                     b.Property<int>("TipoAtividadeId");
 
-                    b.Property<int>("TipoImpressao");
+                    b.Property<int?>("TipoImpressao");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ResponsavelId1");
+                    b.HasIndex("ResponsavelId");
 
                     b.HasIndex("ServicoId");
 
@@ -398,7 +396,7 @@ namespace Calcular.CoreApi.Migrations
                 {
                     b.HasOne("Calcular.CoreApi.Models.User", "Responsavel")
                         .WithMany("Atividades")
-                        .HasForeignKey("ResponsavelId1");
+                        .HasForeignKey("ResponsavelId");
 
                     b.HasOne("Calcular.CoreApi.Models.Business.Servico", "Servico")
                         .WithMany("Atividades")
@@ -422,7 +420,7 @@ namespace Calcular.CoreApi.Migrations
             modelBuilder.Entity("Calcular.CoreApi.Models.Business.Processo", b =>
                 {
                     b.HasOne("Calcular.CoreApi.Models.Business.Cliente", "Advogado")
-                        .WithMany()
+                        .WithMany("Processos")
                         .HasForeignKey("AdvogadoId")
                         .OnDelete(DeleteBehavior.Cascade);
 

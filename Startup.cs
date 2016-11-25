@@ -100,7 +100,7 @@ namespace Calcular.CoreApi
         
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
-            app.EnsureSeedIdentity();
+            app.EnsureSeedIdentityAsync();
 
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();

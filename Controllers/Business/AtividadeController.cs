@@ -21,8 +21,11 @@ namespace Calcular.CoreApi.Controllers.Business
         [HttpGet]
         public IActionResult GetAll([FromQuery] string filter)
         {
-            var result = db.Atividades.Include(x => x.Responsavel);
-            return Ok(result.ToList());
+            var result = db.Atividades
+                            .Include(x => x.Responsavel)
+                            .Include(x => x.TipoAtividade)
+                            .ToList();
+            return Ok(result);
         }
 
         [HttpGet("{id}")]
@@ -70,18 +73,20 @@ namespace Calcular.CoreApi.Controllers.Business
         [HttpDelete("{id}")]
         public IActionResult Delete(int id)
         {
-            var item = db.Servicos.Single(x => x.Id == id);
-            db.Servicos.Remove(item);
+            var item = db.Atividades.Single(x => x.Id == id);
+
+            if (item.Tempo != null || !string.IsNullOrEmpty(item.Observacao) || item.Entrega != null)
+                return BadRequest("Atividade não pode ser excluída");
+            
+            db.Atividades.Remove(item);
             db.SaveChanges();
             return Ok(item);
         }
 
-        [HttpGet("responsavelbytipoatividade/{id}")]
+        [HttpGet("responsavel/{id}")]
         public IActionResult GetResponsavel(int id)
         {
-            var item = db.Servicos.Single(x => x.Id == id);
-            db.Servicos.Remove(item);
-            db.SaveChanges();
+            var item = db.Users.Select(x => new KeyValuePair<string, string>(x.Id, x.Name));
             return Ok(item);
         }
 

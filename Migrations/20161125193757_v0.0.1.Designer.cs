@@ -8,7 +8,7 @@ using Calcular.CoreApi.Models;
 namespace Calcular.CoreApi.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20161121032808_v0.0.1")]
+    [Migration("20161125193757_v0.0.1")]
     partial class v001
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -22,27 +22,25 @@ namespace Calcular.CoreApi.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<DateTime>("Entrega");
+                    b.Property<DateTime?>("Entrega");
 
-                    b.Property<string>("Name");
+                    b.Property<string>("Nome");
 
                     b.Property<string>("Observacao");
 
-                    b.Property<int>("ResponsavelId");
-
-                    b.Property<string>("ResponsavelId1");
+                    b.Property<string>("ResponsavelId");
 
                     b.Property<int>("ServicoId");
 
-                    b.Property<decimal>("Tempo");
+                    b.Property<decimal?>("Tempo");
 
                     b.Property<int>("TipoAtividadeId");
 
-                    b.Property<int>("TipoImpressao");
+                    b.Property<int?>("TipoImpressao");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ResponsavelId1");
+                    b.HasIndex("ResponsavelId");
 
                     b.HasIndex("ServicoId");
 
@@ -60,7 +58,7 @@ namespace Calcular.CoreApi.Migrations
 
                     b.Property<string>("Celular2");
 
-                    b.Property<int>("ComoChegou");
+                    b.Property<int?>("ComoChegou");
 
                     b.Property<string>("ComoChegouDetalhe");
 
@@ -70,15 +68,15 @@ namespace Calcular.CoreApi.Migrations
 
                     b.Property<string>("Endereco");
 
-                    b.Property<decimal>("Honorarios");
+                    b.Property<decimal?>("Honorarios");
 
-                    b.Property<DateTime>("Nascimento");
+                    b.Property<DateTime?>("Nascimento");
 
                     b.Property<string>("Nome");
 
                     b.Property<string>("Observacao");
 
-                    b.Property<int>("Perfil");
+                    b.Property<int?>("Perfil");
 
                     b.Property<string>("Telefone");
 
@@ -98,7 +96,9 @@ namespace Calcular.CoreApi.Migrations
 
                     b.Property<string>("NotaFiscal");
 
-                    b.Property<DateTime>("Prazo");
+                    b.Property<string>("Observacao");
+
+                    b.Property<DateTime?>("Prazo");
 
                     b.Property<int>("ProcessoId");
 
@@ -182,11 +182,11 @@ namespace Calcular.CoreApi.Migrations
 
                     b.Property<DateTime>("Entrada");
 
-                    b.Property<DateTime>("Prazo");
+                    b.Property<DateTime?>("Prazo");
 
                     b.Property<int>("ProcessoId");
 
-                    b.Property<DateTime>("Saida");
+                    b.Property<DateTime?>("Saida");
 
                     b.Property<int>("Status");
 
@@ -397,7 +397,7 @@ namespace Calcular.CoreApi.Migrations
                 {
                     b.HasOne("Calcular.CoreApi.Models.User", "Responsavel")
                         .WithMany("Atividades")
-                        .HasForeignKey("ResponsavelId1");
+                        .HasForeignKey("ResponsavelId");
 
                     b.HasOne("Calcular.CoreApi.Models.Business.Servico", "Servico")
                         .WithMany("Atividades")
@@ -421,7 +421,7 @@ namespace Calcular.CoreApi.Migrations
             modelBuilder.Entity("Calcular.CoreApi.Models.Business.Processo", b =>
                 {
                     b.HasOne("Calcular.CoreApi.Models.Business.Cliente", "Advogado")
-                        .WithMany()
+                        .WithMany("Processos")
                         .HasForeignKey("AdvogadoId")
                         .OnDelete(DeleteBehavior.Cascade);
 

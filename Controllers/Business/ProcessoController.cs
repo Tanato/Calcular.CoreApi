@@ -129,10 +129,21 @@ namespace Calcular.CoreApi.Controllers.Business
         [HttpDelete("{id}")]
         public IActionResult DeleteProcesso(int id)
         {
-            var item = db.Processos.Single(x => x.Id == id);
-            db.Processos.Remove(item);
-            db.SaveChanges();
-            return Ok(item);
+            var item = db.Processos
+                        .Include(x => x.Honorarios)
+                        .Include(x => x.Servicos)
+                        .Single(x => x.Id == id);
+
+            if (item.Honorarios?.Count > 0 || item.Servicos?.Count > 0)
+            {
+                return BadRequest("O processo possúi Honorários/Serviços associados e não pode ser excluído");
+            }
+            else
+            {
+                db.Processos.Remove(item);
+                db.SaveChanges();
+                return Ok(item);
+            }
         }
 
         [Route("local")]

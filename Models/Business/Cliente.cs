@@ -23,6 +23,7 @@ namespace Calcular.CoreApi.Models.Business
         public ComoChegouEnum? ComoChegou { get; set; }
         public string ComoChegouDetalhe { get; set; }
         public string Observacao { get; set; }
-        public int Processos { get { return 0; } }
+        
+        public List<Processo> Processos { get; set; }
     }
 }
