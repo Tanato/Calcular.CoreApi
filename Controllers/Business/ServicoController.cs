@@ -90,7 +90,11 @@ namespace Calcular.CoreApi.Controllers.Business
             item.Saida = model.Saida;
 
             db.SaveChanges();
-            return Ok(item);
+
+            var result = db.Servicos
+                           .Include(x => x.Processo).ThenInclude(x => x.Advogado)
+                           .Single(x => x.Id == model.Id);
+            return Ok(result);
         }
 
         [HttpDelete("{id}")]

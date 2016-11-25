@@ -30,7 +30,7 @@ namespace Calcular.CoreApi.Models.Business
         public string NotaFiscal { get; set; }
         public decimal Valor { get; set; }
         public DateTime Data { get; set; }
-        public DateTime Prazo { get; set; }
+        public DateTime? Prazo { get; set; }
         public string Observacao { get; set; }
 
         public int ProcessoId { get; set; }
