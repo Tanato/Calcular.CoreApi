@@ -164,5 +164,18 @@ namespace Calcular.CoreApi.Controllers.Business
                             .Select(x => new KeyValuePair<int, string>((int)x, EnumHelpers.GetEnumDescription(x)));
             return Ok(result);
         }
+
+        [HttpGet("vara/{filter?}")]
+        public IActionResult GetVara([FromQuery] string filter = "")
+        {
+            var result = db.Processos.Where(x => string.IsNullOrEmpty(filter)
+                                             || x.Vara.ContainsIgnoreNonSpacing(filter))
+                                    .Select(x => x.Vara)
+                                    .Distinct()
+                                    .OrderBy(x => x)
+                                    .ToList();
+
+            return Ok(result);
+        }
     }
 }

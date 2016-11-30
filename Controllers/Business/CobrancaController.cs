@@ -97,7 +97,7 @@ namespace Calcular.CoreApi.Controllers.Business
         }
 
         [HttpGet("contato/{filter?}")]
-        public IActionResult GetExistingCompany([FromQuery] string filter = "")
+        public IActionResult GetContato([FromQuery] string filter = "")
         {
             var result = db.Cobrancas.Where(x => string.IsNullOrEmpty(filter)
                                              || x.Contato.ContainsIgnoreNonSpacing(filter))
