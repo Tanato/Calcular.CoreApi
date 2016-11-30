@@ -21,7 +21,7 @@ namespace Calcular.CoreApi.Controllers.Business
         [HttpGet]
         public IActionResult GetAll()
         {
-            return Ok(db.TipoAtividades.ToList());
+            return Ok(db.TipoAtividades.Where(x => x.Nome != "Revisão").ToList());
         }
 
         [HttpGet("select")]
@@ -48,9 +48,13 @@ namespace Calcular.CoreApi.Controllers.Business
         public IActionResult Delete(int id)
         {
             if (db.Atividades.Any(x => x.TipoAtividadeId == id))
-                return BadRequest("Existem atividades cadastradas com este tipo, tipo não pode ser excluído");
+                return BadRequest("Existem atividades cadastradas com este tipo, tipo não pode ser excluído");            
 
             var item = db.TipoAtividades.Single(x => x.Id == id);
+
+            if (item.Nome == "Revisão")
+                return BadRequest("Atividade padrão do sistema, não pode ser excluída.");
+
             db.TipoAtividades.Remove(item);
             db.SaveChanges();
             return Ok(item);

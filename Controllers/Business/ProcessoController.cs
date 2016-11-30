@@ -163,7 +163,7 @@ namespace Calcular.CoreApi.Controllers.Business
             var result = Enum.GetValues(typeof(ParteEnum))
                             .Cast<ParteEnum>()
                             .Select(x => new KeyValuePair<int, string>((int)x, EnumHelpers.GetEnumDescription(x)));
-            return Ok(result);  
+            return Ok(result);
         }
     }
 }

@@ -28,6 +28,8 @@ namespace Calcular.CoreApi.Models
             builder.Entity<IdentityUserRole<string>>().ToTable("UserRoles");
             builder.Entity<IdentityRoleClaim<string>>().ToTable("RoleClaims");
             builder.Entity<IdentityRole>().ToTable("Roles");
+
+            builder.Entity<TipoAtividade>().HasAlternateKey(x => x.Nome);
         }
     }
 }

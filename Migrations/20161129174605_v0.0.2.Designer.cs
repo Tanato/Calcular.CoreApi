@@ -8,9 +8,10 @@ using Calcular.CoreApi.Models;
 namespace Calcular.CoreApi.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20161129174605_v0.0.2")]
+    partial class v002
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
             modelBuilder
                 .HasAnnotation("ProductVersion", "1.0.1")
@@ -21,7 +22,7 @@ namespace Calcular.CoreApi.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<int?>("AtividadeOrigemId");
+                    b.Property<int?>("AtividadeId");
 
                     b.Property<DateTime?>("Entrega");
 
@@ -42,8 +43,6 @@ namespace Calcular.CoreApi.Migrations
                     b.Property<int?>("TipoImpressao");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("AtividadeOrigemId");
 
                     b.HasIndex("ResponsavelId");
 
@@ -403,10 +402,6 @@ namespace Calcular.CoreApi.Migrations
 
             modelBuilder.Entity("Calcular.CoreApi.Models.Business.Atividade", b =>
                 {
-                    b.HasOne("Calcular.CoreApi.Models.Business.Atividade", "AtividadeOrigem")
-                        .WithMany()
-                        .HasForeignKey("AtividadeOrigemId");
-
                     b.HasOne("Calcular.CoreApi.Models.User", "Responsavel")
                         .WithMany("Atividades")
                         .HasForeignKey("ResponsavelId");

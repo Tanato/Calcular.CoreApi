@@ -20,6 +20,10 @@ namespace Calcular.CoreApi.Models.Business
 
         public string ResponsavelId { get; set; }
         public User Responsavel { get; set; }
+        
+        public TipoExecucaoEnum? TipoExecucao { get; set; }
+        public int? AtividadeOrigemId { get; set; }
+        public Atividade AtividadeOrigem { get; set; }
 
         public string Status
         {

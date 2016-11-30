@@ -1,4 +1,5 @@
 ﻿using Calcular.CoreApi.Models;
+using Calcular.CoreApi.Models.Business;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -45,6 +46,13 @@ namespace Calcular.CoreApi.Migrations
                     }
                 }
             }
+
+            if (!context.TipoAtividades.Any())
+            {
+                context.TipoAtividades.Add(new TipoAtividade { Nome = "Revisão" });
+            }
+
+            context.SaveChanges();
         }
     }
 }

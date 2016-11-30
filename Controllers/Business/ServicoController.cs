@@ -77,6 +77,8 @@ namespace Calcular.CoreApi.Controllers.Business
 
             var result = db.Servicos
                             .Include(x => x.Processo).ThenInclude(x => x.Advogado)
+                            .Include(x => x.Atividades).ThenInclude(x => x.Responsavel)
+                            .Include(x => x.Atividades).ThenInclude(x => x.TipoAtividade)
                             .Single(x => x.Id == model.Id);
             return Ok(result);
         }
@@ -95,6 +97,8 @@ namespace Calcular.CoreApi.Controllers.Business
 
             var result = db.Servicos
                            .Include(x => x.Processo).ThenInclude(x => x.Advogado)
+                           .Include(x => x.Atividades).ThenInclude(x => x.Responsavel)
+                           .Include(x => x.Atividades).ThenInclude(x => x.TipoAtividade)
                            .Single(x => x.Id == model.Id);
             return Ok(result);
         }
