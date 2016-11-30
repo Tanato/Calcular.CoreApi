@@ -66,18 +66,12 @@ namespace Calcular.CoreApi.Controllers.Business
         [HttpPost]
         public IActionResult Post([FromBody] Atividade atividade)
         {
-            if (atividade.TipoAtividade.Nome == "Revisão")
+            if (db.TipoAtividades.Single(x => x.Id == atividade.TipoAtividadeId).Nome == "Revisão")
                 return BadRequest("Atividade do tipo Revisão não pode ser criada diretamente.");
 
-            try
-            {
-                db.Atividades.Add(atividade);
-                db.SaveChanges();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
+            db.Atividades.Add(atividade);
+            db.SaveChanges();
+
             return Ok(atividade);
         }
 

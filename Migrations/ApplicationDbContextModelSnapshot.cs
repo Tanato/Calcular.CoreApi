@@ -92,6 +92,34 @@ namespace Calcular.CoreApi.Migrations
                     b.ToTable("Clientes");
                 });
 
+            modelBuilder.Entity("Calcular.CoreApi.Models.Business.Cobranca", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("Contato");
+
+                    b.Property<DateTime>("DataCobranca");
+
+                    b.Property<string>("Observacao");
+
+                    b.Property<DateTime?>("PrevisaoPagamento");
+
+                    b.Property<int>("ProcessoId");
+
+                    b.Property<string>("UsuarioId");
+
+                    b.Property<decimal>("ValorPendente");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProcessoId");
+
+                    b.HasIndex("UsuarioId");
+
+                    b.ToTable("Cobrancas");
+                });
+
             modelBuilder.Entity("Calcular.CoreApi.Models.Business.Honorario", b =>
                 {
                     b.Property<int>("Id")
@@ -130,8 +158,6 @@ namespace Calcular.CoreApi.Migrations
                     b.Property<string>("Autor");
 
                     b.Property<DateTime>("CreatedAt");
-
-                    b.Property<decimal?>("Honorario");
 
                     b.Property<int?>("IndicacaoId");
 
@@ -178,6 +204,28 @@ namespace Calcular.CoreApi.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("ProcessoDetalhes");
+                });
+
+            modelBuilder.Entity("Calcular.CoreApi.Models.Business.Proposta", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<int>("ComoChegou");
+
+                    b.Property<DateTime>("DataProposta");
+
+                    b.Property<int>("Honorario");
+
+                    b.Property<string>("Observacao");
+
+                    b.Property<int>("ProcessoId");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProcessoId");
+
+                    b.ToTable("Propostas");
                 });
 
             modelBuilder.Entity("Calcular.CoreApi.Models.Business.Servico", b =>
@@ -422,6 +470,18 @@ namespace Calcular.CoreApi.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
+            modelBuilder.Entity("Calcular.CoreApi.Models.Business.Cobranca", b =>
+                {
+                    b.HasOne("Calcular.CoreApi.Models.Business.Processo", "Processo")
+                        .WithMany("Cobrancas")
+                        .HasForeignKey("ProcessoId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("Calcular.CoreApi.Models.User", "Usuario")
+                        .WithMany()
+                        .HasForeignKey("UsuarioId");
+                });
+
             modelBuilder.Entity("Calcular.CoreApi.Models.Business.Honorario", b =>
                 {
                     b.HasOne("Calcular.CoreApi.Models.Business.Processo", "Processo")
@@ -452,6 +512,14 @@ namespace Calcular.CoreApi.Migrations
                     b.HasOne("Calcular.CoreApi.Models.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId");
+                });
+
+            modelBuilder.Entity("Calcular.CoreApi.Models.Business.Proposta", b =>
+                {
+                    b.HasOne("Calcular.CoreApi.Models.Business.Processo", "Processo")
+                        .WithMany("Propostas")
+                        .HasForeignKey("ProcessoId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("Calcular.CoreApi.Models.Business.Servico", b =>

@@ -25,12 +25,13 @@ namespace Calcular.CoreApi.Models.Business
         public int? IndicacaoId { get; set; }
         public User Indicacao { get; set; }
 
-        public decimal? Honorario { get; set; }
         public DateTime CreatedAt { get; set; }
 
         public List<ProcessoDetalhe> ProcessoDetalhes { get; set; }
         public List<Honorario> Honorarios { get; set; }
         public List<Servico> Servicos { get; set; }
+        public List<Cobranca> Cobrancas { get; set; }
+        public List<Proposta> Propostas { get; set; }
 
         public decimal? Total
         {
@@ -48,14 +49,23 @@ namespace Calcular.CoreApi.Models.Business
             }
         }
 
+        public decimal? Honorario
+        {
+            get
+            {
+                if (Honorarios != null && Honorarios.Count > 0)
+                    return Honorarios.Where(x => x.Registro == RegistroEnum.Honorario).Sum(x => x.Valor);
+                else
+                    return null;
+            }
+        }
+
         public DateTime? Prazo
         {
             get
             {
                 if (Honorarios != null && Honorarios.Count > 0)
-                {
                     return Honorarios.Where(x => x.Registro == RegistroEnum.Honorario).Max(x => x.Prazo);
-                }
                 else
                     return null;
             }

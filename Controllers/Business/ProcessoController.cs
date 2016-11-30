@@ -120,7 +120,6 @@ namespace Calcular.CoreApi.Controllers.Business
             item.Vara = newItem.Vara;
             item.AdvogadoId = newItem.AdvogadoId;
             item.IndicacaoId = newItem.IndicacaoId;
-            item.Honorario = newItem.Honorario;
 
             db.SaveChanges();
             return Ok(item);

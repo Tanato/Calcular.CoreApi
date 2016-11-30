@@ -41,11 +41,12 @@ namespace Calcular.CoreApi.Migrations
                 {
                     Id = table.Column<int>(nullable: false)
                         .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
-                    Nome = table.Column<string>(nullable: true)
+                    Nome = table.Column<string>(nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_TipoAtividades", x => x.Id);
+                    table.UniqueConstraint("AK_TipoAtividades_Nome", x => x.Nome);
                 });
 
             migrationBuilder.CreateTable(
@@ -113,7 +114,6 @@ namespace Calcular.CoreApi.Migrations
                     AdvogadoId = table.Column<int>(nullable: false),
                     Autor = table.Column<string>(nullable: true),
                     CreatedAt = table.Column<DateTime>(nullable: false),
-                    Honorario = table.Column<decimal>(nullable: true),
                     IndicacaoId = table.Column<int>(nullable: true),
                     IndicacaoId1 = table.Column<string>(nullable: true),
                     Local = table.Column<int>(nullable: false),
@@ -249,6 +249,37 @@ namespace Calcular.CoreApi.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Cobrancas",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                    Contato = table.Column<string>(nullable: true),
+                    DataCobranca = table.Column<DateTime>(nullable: false),
+                    Observacao = table.Column<string>(nullable: true),
+                    PrevisaoPagamento = table.Column<DateTime>(nullable: true),
+                    ProcessoId = table.Column<int>(nullable: false),
+                    UsuarioId = table.Column<string>(nullable: true),
+                    ValorPendente = table.Column<decimal>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Cobrancas", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Cobrancas_Processos_ProcessoId",
+                        column: x => x.ProcessoId,
+                        principalTable: "Processos",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Cobrancas_Users_UsuarioId",
+                        column: x => x.UsuarioId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Honorarios",
                 columns: table => new
                 {
@@ -303,6 +334,29 @@ namespace Calcular.CoreApi.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Propostas",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                    ComoChegou = table.Column<int>(nullable: false),
+                    DataProposta = table.Column<DateTime>(nullable: false),
+                    Honorario = table.Column<int>(nullable: false),
+                    Observacao = table.Column<string>(nullable: true),
+                    ProcessoId = table.Column<int>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Propostas", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Propostas_Processos_ProcessoId",
+                        column: x => x.ProcessoId,
+                        principalTable: "Processos",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Servicos",
                 columns: table => new
                 {
@@ -332,6 +386,7 @@ namespace Calcular.CoreApi.Migrations
                 {
                     Id = table.Column<int>(nullable: false)
                         .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                    AtividadeOrigemId = table.Column<int>(nullable: true),
                     Entrega = table.Column<DateTime>(nullable: true),
                     Nome = table.Column<string>(nullable: true),
                     Observacao = table.Column<string>(nullable: true),
@@ -339,11 +394,18 @@ namespace Calcular.CoreApi.Migrations
                     ServicoId = table.Column<int>(nullable: false),
                     Tempo = table.Column<decimal>(nullable: true),
                     TipoAtividadeId = table.Column<int>(nullable: false),
+                    TipoExecucao = table.Column<int>(nullable: true),
                     TipoImpressao = table.Column<int>(nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Atividades", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Atividades_Atividades_AtividadeOrigemId",
+                        column: x => x.AtividadeOrigemId,
+                        principalTable: "Atividades",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Atividades_Users_ResponsavelId",
                         column: x => x.ResponsavelId,
@@ -365,6 +427,11 @@ namespace Calcular.CoreApi.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_Atividades_AtividadeOrigemId",
+                table: "Atividades",
+                column: "AtividadeOrigemId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Atividades_ResponsavelId",
                 table: "Atividades",
                 column: "ResponsavelId");
@@ -378,6 +445,16 @@ namespace Calcular.CoreApi.Migrations
                 name: "IX_Atividades_TipoAtividadeId",
                 table: "Atividades",
                 column: "TipoAtividadeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Cobrancas_ProcessoId",
+                table: "Cobrancas",
+                column: "ProcessoId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Cobrancas_UsuarioId",
+                table: "Cobrancas",
+                column: "UsuarioId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Honorarios_ProcessoId",
@@ -403,6 +480,11 @@ namespace Calcular.CoreApi.Migrations
                 name: "IX_ProcessoDetalhes_UserId",
                 table: "ProcessoDetalhes",
                 column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Propostas_ProcessoId",
+                table: "Propostas",
+                column: "ProcessoId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Servicos_ProcessoId",
@@ -462,10 +544,16 @@ namespace Calcular.CoreApi.Migrations
                 name: "Atividades");
 
             migrationBuilder.DropTable(
+                name: "Cobrancas");
+
+            migrationBuilder.DropTable(
                 name: "Honorarios");
 
             migrationBuilder.DropTable(
                 name: "ProcessoDetalhes");
+
+            migrationBuilder.DropTable(
+                name: "Propostas");
 
             migrationBuilder.DropTable(
                 name: "Log");
