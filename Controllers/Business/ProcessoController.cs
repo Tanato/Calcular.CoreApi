@@ -1,6 +1,7 @@
 ﻿using Calcular.CoreApi.Common;
 using Calcular.CoreApi.Models;
 using Calcular.CoreApi.Models.Business;
+using Calcular.CoreApi.Models.ViewModels;
 using Calcular.CoreApi.Shared;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -27,16 +28,27 @@ namespace Calcular.CoreApi.Controllers.Business
         [HttpGet]
         public IActionResult GetAll([FromQuery] string filter)
         {
-            var result = db.Processos
+            var query = db.Processos
                             .Include(x => x.Advogado)
                             .Include(x => x.Honorarios)
                             .Where(x => string.IsNullOrEmpty(filter)
-                                             || x.Numero.Contains(filter)
-                                             || x.Reu.Contains(filter)
-                                             || x.Autor.Contains(filter)
-                                             || x.Advogado.Nome.Contains(filter));
+                                        || x.Numero.Contains(filter)
+                                        || x.Reu.Contains(filter)
+                                        || x.Autor.Contains(filter))
+                            .OrderBy(x => x.Id)
+                            .Select(x => new ProcessoViewModel
+                            {
+                                Advogado = new Cliente { Id = x.Advogado.Id, Nome = x.Advogado.Nome },
+                                Numero = x.Numero,
+                                Id = x.Id,
+                                Autor = x.Autor,
+                                Reu = x.Reu,
+                                Honorario = x.Honorario,
+                                Prazo = x.Prazo,
+                                Total = x.Total,
+                            }).ToList();
 
-            return Ok(result.ToList());
+            return Ok(query);
         }
 
         [HttpGet]
@@ -60,6 +72,8 @@ namespace Calcular.CoreApi.Controllers.Business
             var result = db.Processos
                             .Include(x => x.Advogado)
                             .Include(x => x.Honorarios)
+                            .Include(x => x.Perito)
+                            .Include(x => x.Indicacao)
                             .Include(x => x.ProcessoDetalhes).ThenInclude(x => x.User)
                             .SingleOrDefault(x => x.Id == id);
 

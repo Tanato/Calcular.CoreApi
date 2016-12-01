@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using Calcular.CoreApi.Models;
+using System;
 
 namespace Calcular.CoreApi.Controllers
 {
@@ -69,6 +70,24 @@ namespace Calcular.CoreApi.Controllers
                 userDb.Name = user.Name;
                 userDb.Email = user.Email;
             }
+        }
+
+        [HttpGet("select")]
+        public IActionResult GetKeyValue([FromQuery] string filter)
+        {
+            var result = db.Users.Where(x => string.IsNullOrEmpty(filter)
+                                             || x.Name.ContainsIgnoreNonSpacing(filter))
+                                    .OrderBy(x => x.Name)
+                                    .Select(x => new KeyValuePair<string, string>(x.Id, x.Name)).ToList();
+
+            return Ok(result);
+        }
+
+        [HttpGet("select/{id}")]
+        public IActionResult GetKeyValueId(string id)
+        {
+            var result = db.Users.Select(x => new KeyValuePair<string, string>(x.Id, x.Name)).Single(x => x.Key == id);
+            return Ok(result);
         }
     }
 }

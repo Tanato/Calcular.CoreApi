@@ -8,7 +8,7 @@ using Calcular.CoreApi.Models;
 namespace Calcular.CoreApi.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20161130190302_v0.0.1")]
+    [Migration("20161130204827_v0.0.1")]
     partial class v001
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -160,9 +160,7 @@ namespace Calcular.CoreApi.Migrations
 
                     b.Property<DateTime>("CreatedAt");
 
-                    b.Property<int?>("IndicacaoId");
-
-                    b.Property<string>("IndicacaoId1");
+                    b.Property<string>("IndicacaoId");
 
                     b.Property<int>("Local");
 
@@ -172,6 +170,8 @@ namespace Calcular.CoreApi.Migrations
 
                     b.Property<int>("Parte");
 
+                    b.Property<string>("PeritoId");
+
                     b.Property<string>("Reu");
 
                     b.Property<string>("Vara");
@@ -180,7 +180,9 @@ namespace Calcular.CoreApi.Migrations
 
                     b.HasIndex("AdvogadoId");
 
-                    b.HasIndex("IndicacaoId1");
+                    b.HasIndex("IndicacaoId");
+
+                    b.HasIndex("PeritoId");
 
                     b.ToTable("Processos");
                 });
@@ -499,8 +501,12 @@ namespace Calcular.CoreApi.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("Calcular.CoreApi.Models.User", "Indicacao")
-                        .WithMany("Processos")
-                        .HasForeignKey("IndicacaoId1");
+                        .WithMany()
+                        .HasForeignKey("IndicacaoId");
+
+                    b.HasOne("Calcular.CoreApi.Models.User", "Perito")
+                        .WithMany()
+                        .HasForeignKey("PeritoId");
                 });
 
             modelBuilder.Entity("Calcular.CoreApi.Models.Business.ProcessoDetalhe", b =>

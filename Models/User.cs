@@ -12,7 +12,6 @@ namespace Calcular.CoreApi.Models
         public string Password { get; set; }
 
         public List<Atividade> Atividades { get; set; }
-        public List<Processo> Processos { get; set; }
         public List<Log> UserLogs { get; set; }
     }
 }

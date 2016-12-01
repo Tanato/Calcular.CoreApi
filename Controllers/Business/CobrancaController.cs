@@ -1,6 +1,7 @@
 ﻿using Calcular.CoreApi.Common;
 using Calcular.CoreApi.Models;
 using Calcular.CoreApi.Models.Business;
+using Calcular.CoreApi.Models.ViewModels;
 using Calcular.CoreApi.Shared;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -34,7 +35,19 @@ namespace Calcular.CoreApi.Controllers.Business
                                              || x.Numero.Contains(filter)
                                              || x.Reu.Contains(filter)
                                              || x.Autor.Contains(filter)
-                                             || x.Advogado.Nome.Contains(filter));
+                                             || x.Advogado.Nome.Contains(filter))
+                                             .OrderBy(x => x.Id)
+                            .Select(x => new ProcessoViewModel
+                            {
+                                Advogado = new Cliente { Id = x.Advogado.Id, Nome = x.Advogado.Nome },
+                                Numero = x.Numero,
+                                Id = x.Id,
+                                Autor = x.Autor,
+                                Reu = x.Reu,
+                                Honorario = x.Honorario,
+                                Prazo = x.Prazo,
+                                Total = x.Total,
+                            }).ToList(); ;
 
             return Ok(result.ToList());
         }

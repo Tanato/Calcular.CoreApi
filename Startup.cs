@@ -3,9 +3,7 @@ using Calcular.CoreApi.Models;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
@@ -15,6 +13,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Steeltoe.Extensions.Configuration;
 using System;
+using System.IO.Compression;
 using System.Net;
 using System.Threading.Tasks;
 
@@ -47,9 +46,6 @@ namespace Calcular.CoreApi
             if (CurrentEnvironment.IsDevelopment())
             {
                 var sqlconn = @"Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=Calcular.CoreSql;Integrated Security=True";
-
-                //var sqlconn = @"Server=localhost;Database=CalcularCoreSql;Trusted_Connection=True;";
-
                 services.AddEntityFrameworkSqlServer();
                 services.AddDbContext<ApplicationDbContext>(o => o.UseSqlServer(sqlconn));
             }
@@ -100,6 +96,14 @@ namespace Calcular.CoreApi
         
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
+            app.Use(async (context, next) =>
+            {
+                context.Response.Headers.Add("Content-encoding", "gzip");
+                context.Response.Body = new GZipStream(context.Response.Body, CompressionLevel.Fastest);
+                await next();
+                await context.Response.Body.FlushAsync();
+            });
+
             app.EnsureSeedIdentityAsync();
 
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
@@ -108,7 +112,6 @@ namespace Calcular.CoreApi
             app.UseCors("CorsPolicy");
 
             app.UseIdentity();
-
 
             app.UseExceptionHandler();
             app.UseMvc();

@@ -114,12 +114,12 @@ namespace Calcular.CoreApi.Migrations
                     AdvogadoId = table.Column<int>(nullable: false),
                     Autor = table.Column<string>(nullable: true),
                     CreatedAt = table.Column<DateTime>(nullable: false),
-                    IndicacaoId = table.Column<int>(nullable: true),
-                    IndicacaoId1 = table.Column<string>(nullable: true),
+                    IndicacaoId = table.Column<string>(nullable: true),
                     Local = table.Column<int>(nullable: false),
                     Numero = table.Column<string>(nullable: true),
                     NumeroAutores = table.Column<int>(nullable: false),
                     Parte = table.Column<int>(nullable: false),
+                    PeritoId = table.Column<string>(nullable: true),
                     Reu = table.Column<string>(nullable: true),
                     Vara = table.Column<string>(nullable: true)
                 },
@@ -133,8 +133,14 @@ namespace Calcular.CoreApi.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Processos_Users_IndicacaoId1",
-                        column: x => x.IndicacaoId1,
+                        name: "FK_Processos_Users_IndicacaoId",
+                        column: x => x.IndicacaoId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Processos_Users_PeritoId",
+                        column: x => x.PeritoId,
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
@@ -467,9 +473,14 @@ namespace Calcular.CoreApi.Migrations
                 column: "AdvogadoId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Processos_IndicacaoId1",
+                name: "IX_Processos_IndicacaoId",
                 table: "Processos",
-                column: "IndicacaoId1");
+                column: "IndicacaoId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Processos_PeritoId",
+                table: "Processos",
+                column: "PeritoId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ProcessoDetalhes_ProcessoId",
