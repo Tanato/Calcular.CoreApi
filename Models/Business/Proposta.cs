@@ -16,5 +16,10 @@ namespace Calcular.CoreApi.Models.Business
         public DateTime DataProposta { get; set; }
         public ComoChegouEnum ComoChegou { get; set; }
         public string Observacao { get; set; }
+
+        public string Contato { get; set; }
+
+        public string UsuarioId { get; set; }
+        public User Usuario { get; set; }
     }
 }
