@@ -28,7 +28,45 @@ namespace Calcular.CoreApi.Controllers.Business
                                         || x.Processo.Advogado.Nome.Contains(filter)
                                         || x.Processo.Advogado.Telefone.Contains(filter)
                                         || x.Processo.Advogado.Celular.Contains(filter))
-                                        .ToList();
+                            .ToList()
+                            .Select(x => new Servico
+                            {
+                                Id = x.Id,
+                                Entrada = x.Entrada,
+                                Prazo = x.Prazo,
+                                Saida = x.Saida,
+                                Status = x.Status,
+                                Volumes = x.Volumes,
+                                Processo = new Processo
+                                {
+                                    Id = x.Processo.Id,
+                                    Autor = x.Processo.Autor,
+                                    Reu = x.Processo.Reu,
+                                    Numero = x.Processo.Numero,
+                                    Local = x.Processo.Local,
+                                    Parte = x.Processo.Parte,
+                                    Advogado = new Cliente
+                                    {
+                                        Id = x.Processo.Advogado.Id,
+                                        Nome = x.Processo.Advogado.Nome,
+                                        Telefone = x.Processo.Advogado.Telefone,
+                                        Celular = x.Processo.Advogado.Celular,
+                                        Email = x.Processo.Advogado.Email,
+                                    }
+                                },
+                                Atividades = x.Atividades.Select(a => new Atividade
+                                {
+                                    Id = a.Id,
+                                    Entrega = a.Entrega,
+                                    TipoAtividade = a.TipoAtividade,
+                                    Responsavel = a.Responsavel,
+                                    Tempo = a.Tempo,
+                                    EtapaAtividade = a.EtapaAtividade,
+                                    TipoImpressao = a.TipoImpressao,
+                                    TipoExecucao = a.TipoExecucao,
+                                }).ToList(),
+                            })
+                            .ToList();
 
             return Ok(result);
         }
@@ -43,6 +81,43 @@ namespace Calcular.CoreApi.Controllers.Business
                             .Include(x => x.Atividades).ThenInclude(x => x.TipoAtividade)
                             .Where(x => string.IsNullOrEmpty(filter)
                                              || x.Processo.Numero.Contains(filter))
+                            .Select(x => new Servico
+                            {
+                                Id = x.Id,
+                                Entrada = x.Entrada,
+                                Prazo = x.Prazo,
+                                Saida = x.Saida,
+                                Status = x.Status,
+                                Volumes = x.Volumes,
+                                Processo = new Processo
+                                {
+                                    Id = x.Processo.Id,
+                                    Autor = x.Processo.Autor,
+                                    Reu = x.Processo.Reu,
+                                    Numero = x.Processo.Numero,
+                                    Local = x.Processo.Local,
+                                    Parte = x.Processo.Parte,
+                                    Advogado = new Cliente
+                                    {
+                                        Id = x.Processo.Advogado.Id,
+                                        Nome = x.Processo.Advogado.Nome,
+                                        Telefone = x.Processo.Advogado.Telefone,
+                                        Celular = x.Processo.Advogado.Celular,
+                                        Email = x.Processo.Advogado.Email,
+                                    }
+                                },
+                                Atividades = x.Atividades.Select(a => new Atividade
+                                {
+                                    Id = a.Id,
+                                    Entrega = a.Entrega,
+                                    TipoAtividade = a.TipoAtividade,
+                                    Responsavel = a.Responsavel,
+                                    Tempo = a.Tempo,
+                                    EtapaAtividade = a.EtapaAtividade,
+                                    TipoImpressao = a.TipoImpressao,
+                                    TipoExecucao = a.TipoExecucao,
+                                }).ToList(),
+                            })
                             .ToList();
 
             return Ok(result);

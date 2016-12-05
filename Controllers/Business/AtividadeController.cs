@@ -33,9 +33,9 @@ namespace Calcular.CoreApi.Controllers.Business
                             .Select(x => new Atividade
                             {
                                 Id = x.Id,
-                                Nome = x.Nome,
                                 Entrega = x.Entrega,
                                 Tempo = x.Tempo,
+                                TipoExecucao = x.TipoExecucao,
                                 ServicoId = x.ServicoId,
                                 Servico = new Servico
                                 {
@@ -79,9 +79,9 @@ namespace Calcular.CoreApi.Controllers.Business
                             .Select(x => new Atividade
                             {
                                 Id = x.Id,
-                                Nome = x.Nome,
                                 Entrega = x.Entrega,
                                 Tempo = x.Tempo,
+                                TipoExecucao = x.TipoExecucao,
                                 ServicoId = x.ServicoId,
                                 Servico = new Servico
                                 {
@@ -142,8 +142,7 @@ namespace Calcular.CoreApi.Controllers.Business
 
             if (item.EtapaAtividade == EtapaAtividadeEnum.Refazer || newItem.EtapaAtividade == EtapaAtividadeEnum.Refazer)
                 return BadRequest("Atividade para Refazer não pode ser alterada.");
-
-            item.Nome = newItem.Nome;
+            
             item.Entrega = newItem.Entrega;
             item.Tempo = newItem.Tempo;
             item.TipoImpressao = newItem.TipoImpressao;
@@ -168,8 +167,8 @@ namespace Calcular.CoreApi.Controllers.Business
             return Ok(item);
         }
 
-        [HttpGet("responsavel")]
-        public IActionResult GetResponsavel()
+        [HttpGet("responsavel/{id}")]
+        public IActionResult GetResponsavel(int id)
         {
             var item = db.Users
                             .ToList()

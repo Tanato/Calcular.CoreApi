@@ -36,6 +36,7 @@ namespace Calcular.CoreApi.Controllers.Business
                                         || x.Reu.Contains(filter)
                                         || x.Autor.Contains(filter))
                             .OrderBy(x => x.Id)
+                            .ToList()
                             .Select(x => new ProcessoViewModel
                             {
                                 Numero = x.Numero,
@@ -69,6 +70,7 @@ namespace Calcular.CoreApi.Controllers.Business
                             .Include(x => x.ProcessoDetalhes).ThenInclude(x => x.User)
                             .Where(x => string.IsNullOrEmpty(filter)
                                              || x.Numero.Contains(filter))
+                            .ToList()
                             .Select(x => new ProcessoViewModel
                             {
                                 Numero = x.Numero,
