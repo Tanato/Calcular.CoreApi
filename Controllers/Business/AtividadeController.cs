@@ -176,7 +176,7 @@ namespace Calcular.CoreApi.Controllers.Business
                             .Where(x => (userManager.IsInRoleAsync(x, "Calculista").Result
                                         || userManager.IsInRoleAsync(x, "Revisor").Result
                                         || userManager.IsInRoleAsync(x, "Gerencial").Result)
-                                     && !userManager.IsInRoleAsync(x, "Inativo").Result)
+                                     && !x.Inativo)
                             .Select(x => new KeyValuePair<string, string>(x.Id, x.Name));
             return Ok(item);
         }

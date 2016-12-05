@@ -38,6 +38,7 @@ namespace Calcular.CoreApi.Controllers
                     Email = user.Email,
                     Login = user.UserName,
                     Roles = user.Roles.Select(x => x.RoleId),
+                    Inativo = user.Inativo,
                     Perfis = string.Join(", ", roles.Where(x => user.Roles.Any(z => z.RoleId == x.Id))),
                 });
 
@@ -65,6 +66,7 @@ namespace Calcular.CoreApi.Controllers
                     Email = user.Email,
                     Login = user.UserName,
                     Roles = user.Roles.Select(x => x.RoleId),
+                    Inativo = user.Inativo,
                     Perfis = rolesNames,
                 };
                 return Ok(result);
@@ -81,17 +83,6 @@ namespace Calcular.CoreApi.Controllers
             var user = db.Users.SingleOrDefault(x => x.Id.Equals(userId));
             userManager.AddToRolesAsync(user, roles);
             db.SaveChanges();
-        }
-
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody]User user)
-        {
-            var userDb = db.Users.SingleOrDefault(x => x.Id.Equals(id));
-            if (userDb != null)
-            {
-                userDb.Name = user.Name;
-                userDb.Email = user.Email;
-            }
         }
 
         [HttpGet("select")]

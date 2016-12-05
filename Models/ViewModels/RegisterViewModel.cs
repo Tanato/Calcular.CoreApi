@@ -24,6 +24,8 @@ namespace Calcular.CoreApi.Models.ViewModels
         [Display(Name = "BirthDate")]
         public DateTime BirthDate { get; set; }
 
+        public bool Inativo { get; set; }
+
         public IEnumerable<string> Roles { get; set; }
     }
 }

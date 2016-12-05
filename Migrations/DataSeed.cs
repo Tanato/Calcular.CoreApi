@@ -24,14 +24,12 @@ namespace Calcular.CoreApi.Migrations
             var roleManager = app.ApplicationServices.GetService<RoleManager<IdentityRole>>();
             var userManager = app.ApplicationServices.GetService<UserManager<User>>();
 
-            if (!context.Roles.Any())
+            var roles = new[] { "Administrativo", "Calculista", "Revisor", "Gerencial", "Associado" };
+
+            foreach (var item in roles)
             {
-                await roleManager.CreateAsync(new IdentityRole { Name = "Administrativo" });
-                await roleManager.CreateAsync(new IdentityRole { Name = "Calculista" });
-                await roleManager.CreateAsync(new IdentityRole { Name = "Revisor" });
-                await roleManager.CreateAsync(new IdentityRole { Name = "Gerencial" });
-                await roleManager.CreateAsync(new IdentityRole { Name = "Associado" });
-                await roleManager.CreateAsync(new IdentityRole { Name = "Inativo" });
+                if (!context.Roles.Any(x => x.Name == item))
+                    await roleManager.CreateAsync(new IdentityRole { Name = item });
             }
 
             if (!context.Users.Any())

@@ -45,7 +45,7 @@ namespace Calcular.CoreApi.Controllers.Business
             var result = db.Clientes.Where(x => string.IsNullOrEmpty(filter)
                                              || x.Nome.ContainsIgnoreNonSpacing(filter))
                                     .OrderBy(x => x.Nome)
-                                    .Select(x => new KeyValuePair<int, string>(x.Id, x.Nome)).ToList();
+                                    .ToList();
 
             return Ok(result);
         }
