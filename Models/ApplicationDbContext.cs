@@ -32,6 +32,8 @@ namespace Calcular.CoreApi.Models
             builder.Entity<IdentityRole>().ToTable("Roles");
 
             builder.Entity<TipoAtividade>().HasAlternateKey(x => x.Nome);
+            // builder.Entity<Cliente>().HasAlternateKey(x => x.Email);
+            // builder.Entity<Processo>().HasAlternateKey(x => x.Numero);
         }
     }
 }

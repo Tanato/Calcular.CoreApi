@@ -24,39 +24,32 @@ namespace Calcular.CoreApi.Controllers.Business
             this.userManager = userManager;
         }
 
-        [HttpGet("processo")]
+        [HttpGet()]
         public IActionResult GetAll([FromQuery] string filter)
         {
-            var result = db.Processos
-                            .Include(x => x.Advogado)
-                            .Include(x => x.Honorarios)
-                            .Include(x => x.Propostas).ThenInclude(x => x.Usuario)
+            var result = db.Propostas
                             .Where(x => string.IsNullOrEmpty(filter)
-                                             || x.Numero.Contains(filter)
-                                             || x.Reu.Contains(filter)
-                                             || x.Autor.Contains(filter)
-                                             || x.Advogado.Nome.Contains(filter))
-                                             .OrderBy(x => x.Id)
-                            .Select(x => new ProcessoViewModel
+                                        || x.Numero.Contains(filter)
+                                        || x.Contato.Contains(filter))
+                                        .OrderBy(x => x.Id)
+                            .Select(x => new Proposta
                             {
-                                Advogado = new Cliente { Id = x.Advogado.Id, Nome = x.Advogado.Nome },
+                                Contato = x.Contato,
                                 Numero = x.Numero,
                                 Id = x.Id,
-                                Autor = x.Autor,
-                                Reu = x.Reu,
-                            }).ToList(); ;
+                                Telefone = x.Telefone,
+                                Celular = x.Celular,
+                            })
+                            .ToList();
 
-            return Ok(result.ToList());
+            return Ok(result);
         }
 
         [HttpGet]
-        [Route("processo/numero")]
+        [Route("numero")]
         public IActionResult GetByNumber([FromQuery] string filter)
         {
-            var result = db.Processos
-                            .Include(x => x.Advogado)
-                            .Include(x => x.Honorarios)
-                            .Include(x => x.Propostas).ThenInclude(x => x.Usuario)
+            var result = db.Propostas
                             .Where(x => string.IsNullOrEmpty(filter)
                                         || x.Numero.Contains(filter))
                             .ToList();
@@ -64,13 +57,10 @@ namespace Calcular.CoreApi.Controllers.Business
             return Ok(result);
         }
 
-        [HttpGet("processo/{id}")]
+        [HttpGet("{id}")]
         public IActionResult GetById(int id)
         {
-            var result = db.Processos
-                            .Include(x => x.Advogado)
-                            .Include(x => x.Honorarios)
-                            .Include(x => x.Propostas).ThenInclude(x => x.Usuario)
+            var result = db.Propostas
                             .SingleOrDefault(x => x.Id == id);
 
             return Ok(result);
@@ -80,10 +70,6 @@ namespace Calcular.CoreApi.Controllers.Business
         public IActionResult PostProposta([FromBody] Proposta proposta)
         {
             var user = userManager.GetUserAsync(HttpContext.User).Result;
-
-            var processo = db.Processos
-                           .Include(x => x.Honorarios)
-                           .Single(x => x.Id == proposta.ProcessoId);
 
             proposta.UsuarioId = user.Id;
 
@@ -108,13 +94,62 @@ namespace Calcular.CoreApi.Controllers.Business
         [HttpGet("contato/{filter?}")]
         public IActionResult GetContato([FromQuery] string filter = "")
         {
-            var result = db.Propostas.Where(x => string.IsNullOrEmpty(filter)
+            var contato = db.Propostas.Where(x => string.IsNullOrEmpty(filter)
                                              || x.Contato.ContainsIgnoreNonSpacing(filter))
-                                    .Select(x => x.Contato)
-                                    .Distinct()
-                                    .OrderBy(x => x)
+                                    .GroupBy(c => c.Contato)
+                                    .Select(g => g.First())
+                                    .ToList()
+                                    .Select(x => new Cliente
+                                    {
+                                        Nome = x.Contato,
+                                        Id = 0,
+                                        Email = x.Email,
+                                        Telefone = x.Telefone,
+                                        Celular = x.Celular,
+                                    })
+                                    .OrderBy(x => x.Nome)
                                     .ToList();
 
+            var cliente = db.Clientes.Where(x => string.IsNullOrEmpty(filter)
+                                             || x.Nome.ContainsIgnoreNonSpacing(filter))
+                                    .Select(x => new Cliente
+                                    {
+                                        Nome = x.Nome,
+                                        Id = x.Id,
+                                        Email = x.Email,
+                                        Telefone = x.Telefone,
+                                        Celular = x.Celular,
+                                    })
+                                    .OrderBy(x => x.Nome)
+                                    .ToList();
+
+            contato.RemoveAll(x => cliente.Any(c => c.Nome == x.Nome
+                                                || c.Email == x.Email
+                                                || c.Celular == x.Celular
+                                                || c.Telefone == x.Telefone));
+
+            cliente.AddRange(contato);
+
+            return Ok(cliente);
+        }
+
+        [Route("comochegou")]
+        [HttpGet]
+        public IActionResult GetComoChegou()
+        {
+            var result = Enum.GetValues(typeof(ComoChegouEnum))
+                            .Cast<ComoChegouEnum>()
+                            .Select(x => new KeyValuePair<int, string>((int)x, EnumHelpers.GetEnumDescription(x)));
+            return Ok(result);
+        }
+
+        [Route("motivo")]
+        [HttpGet]
+        public IActionResult GetMotivo()
+        {
+            var result = Enum.GetValues(typeof(MotivoEnum))
+                            .Cast<MotivoEnum>()
+                            .Select(x => new KeyValuePair<int, string>((int)x, EnumHelpers.GetEnumDescription(x)));
             return Ok(result);
         }
     }

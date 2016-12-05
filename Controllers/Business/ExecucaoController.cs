@@ -40,6 +40,7 @@ namespace Calcular.CoreApi.Controllers.Business
                 item.Entrega = atividade.Entrega;
                 item.Tempo = atividade.Tempo;
                 item.Observacao = atividade.Observacao;
+                item.TipoExecucao = atividade.TipoExecucao;
 
                 switch (atividade.TipoExecucao)
                 {

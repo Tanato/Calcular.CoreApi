@@ -11,7 +11,7 @@ namespace Calcular.CoreApi.Models.Business
         public string Numero { get; set; }
         public string Autor { get; set; }
         public string Reu { get; set; }
-        public LocalEnum Local { get; set; }
+        public TipoJusticaEnum Local { get; set; }
         public ParteEnum Parte { get; set; }
         public int NumeroAutores { get; set; }
         public string Vara { get; set; }

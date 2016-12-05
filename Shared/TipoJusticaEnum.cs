@@ -3,7 +3,7 @@ using System.ComponentModel;
 
 namespace Calcular.CoreApi.Shared
 {
-    public enum LocalEnum
+    public enum TipoJusticaEnum
     {
         [Description("Fórum")]
         [Mask("")]

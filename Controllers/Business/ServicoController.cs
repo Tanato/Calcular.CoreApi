@@ -21,7 +21,7 @@ namespace Calcular.CoreApi.Controllers.Business
         public IActionResult GetAll([FromQuery] string filter)
         {
             var result = db.Servicos
-                            .Include(x => x.Processo)
+                            .Include(x => x.Processo).ThenInclude(x => x.Advogado)
                             .Include(x => x.Atividades).ThenInclude(x => x.Responsavel)
                             .Where(x => string.IsNullOrEmpty(filter)
                                         || x.Processo.Numero.Contains(filter)

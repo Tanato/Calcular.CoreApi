@@ -163,8 +163,8 @@ namespace Calcular.CoreApi.Controllers.Business
         [HttpGet]
         public IActionResult GetLocal()
         {
-            var result = Enum.GetValues(typeof(LocalEnum))
-                            .Cast<LocalEnum>()
+            var result = Enum.GetValues(typeof(TipoJusticaEnum))
+                            .Cast<TipoJusticaEnum>()
                             .Select(x => new { Key = (int)x, Value = EnumHelpers.GetEnumDescription(x), Mask = EnumHelpers.GetAttributeOfType<MaskAttribute>(x) });
             return Ok(result);
         }
