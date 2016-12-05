@@ -33,7 +33,10 @@ namespace MovieAngularJSApp.Controllers
             var result = await signInManager.PasswordSignInAsync(login.UserName, login.Password, false, false);
             if (result.Succeeded)
             {
-                return Ok();
+                if (userManager.IsInRoleAsync(userManager.GetUserAsync(HttpContext.User).Result, "Inativo").Result)
+                    return BadRequest("Usuário Inativo");
+                else
+                    return Ok();
             }
             ModelState.AddModelError("Error", "Invalid username or password.");
             return BadRequest(ModelState);
@@ -47,7 +50,7 @@ namespace MovieAngularJSApp.Controllers
                 var user = new User { Name = model.Name, UserName = model.UserName, Email = model.Email, BirthDate = model.BirthDate.Date.AddHours(12) };
                 var result =
                     await userManager.CreateAsync(user, "senha123");
-                
+
                 foreach (var role in model.Roles)
                     await userManager.AddToRoleAsync(user, db.Roles.Single(x => x.Id == role).Name);
 

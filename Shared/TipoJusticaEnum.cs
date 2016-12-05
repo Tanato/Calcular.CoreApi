@@ -14,5 +14,7 @@ namespace Calcular.CoreApi.Shared
         [Description("Justiça Federal")]
         [Mask("")]
         Federal,
+        [Description("Outro")]
+        Outro,
     }
 }

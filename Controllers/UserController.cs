@@ -26,24 +26,46 @@ namespace Calcular.CoreApi.Controllers
         [HttpGet]
         public IActionResult Get()
         {
-            var users = db.Users.Include(x => x.Roles).OrderBy(x => x.UserName);
-            return Ok(users);
-        }
+            var roles = db.Roles.ToList();
 
-        [HttpGet("{id}")]
-        public IActionResult Get(string id)
-        {
-            var user = db.Users.Include(x => x.Roles).SingleOrDefault(x => x.Id.Equals(id));
-            if (user != null)
-            {
-                var result = new
+            var users = db.Users.Include(x => x.Roles).OrderBy(x => x.UserName).ToList()
+                .Select(user => new
                 {
+                    Id = user.Id,
                     UserName = user.UserName,
                     Name = user.Name,
                     BirthDate = user.BirthDate,
                     Email = user.Email,
                     Login = user.UserName,
                     Roles = user.Roles.Select(x => x.RoleId),
+                    Perfis = string.Join(", ", roles.Where(x => user.Roles.Any(z => z.RoleId == x.Id))),
+                });
+
+
+            return Ok(users);
+        }
+
+        [HttpGet("{id}")]
+        public IActionResult Get(string id)
+        {
+            var user = db.Users
+                            .Include(x => x.Roles)
+                            .SingleOrDefault(x => x.Id.Equals(id));
+
+            if (user != null)
+            {
+                var rolesNames = string.Join(", ", db.Roles.Where(x => x.Users.Any(z => z.UserId == user.Id)));
+
+                var result = new
+                {
+                    Id = user.Id,
+                    UserName = user.UserName,
+                    Name = user.Name,
+                    BirthDate = user.BirthDate,
+                    Email = user.Email,
+                    Login = user.UserName,
+                    Roles = user.Roles.Select(x => x.RoleId),
+                    Perfis = rolesNames,
                 };
                 return Ok(result);
             }

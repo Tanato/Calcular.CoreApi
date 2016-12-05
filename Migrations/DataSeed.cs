@@ -30,6 +30,8 @@ namespace Calcular.CoreApi.Migrations
                 await roleManager.CreateAsync(new IdentityRole { Name = "Calculista" });
                 await roleManager.CreateAsync(new IdentityRole { Name = "Revisor" });
                 await roleManager.CreateAsync(new IdentityRole { Name = "Gerencial" });
+                await roleManager.CreateAsync(new IdentityRole { Name = "Associado" });
+                await roleManager.CreateAsync(new IdentityRole { Name = "Inativo" });
             }
 
             if (!context.Users.Any())
@@ -49,7 +51,18 @@ namespace Calcular.CoreApi.Migrations
 
             if (!context.TipoAtividades.Any())
             {
-                context.TipoAtividades.Add(new TipoAtividade { Nome = "Revisão" });
+                context.TipoAtividades.Add(new TipoAtividade { Nome = "Atualização" });
+                context.TipoAtividades.Add(new TipoAtividade { Nome = "Cálculo + Parecer" });
+                context.TipoAtividades.Add(new TipoAtividade { Nome = "Cálculo Assistência" });
+                context.TipoAtividades.Add(new TipoAtividade { Nome = "Cálculo Oficial" });
+                context.TipoAtividades.Add(new TipoAtividade { Nome = "Cálculo Oficial + Quesitos" });
+                context.TipoAtividades.Add(new TipoAtividade { Nome = "Esclarecimento" });
+                context.TipoAtividades.Add(new TipoAtividade { Nome = "Impugnação" });
+                context.TipoAtividades.Add(new TipoAtividade { Nome = "Levantamento Assistência" });
+                context.TipoAtividades.Add(new TipoAtividade { Nome = "Levantamento Oficial" });
+                context.TipoAtividades.Add(new TipoAtividade { Nome = "Levantamento Oficial + Quesitos" });
+                context.TipoAtividades.Add(new TipoAtividade { Nome = "Parecer" });
+                context.TipoAtividades.Add(new TipoAtividade { Nome = "Saldo Remanescente" });
             }
 
             context.SaveChanges();

@@ -18,12 +18,9 @@ namespace Calcular.CoreApi.Models.Business
 
         public int AdvogadoId { get; set; }
         public Cliente Advogado { get; set; }
-
-        public string PeritoId { get; set; }
-        public User Perito { get; set; }
         
-        public string IndicacaoId { get; set; }
-        public User Indicacao { get; set; }
+        public string Perito { get; set; }
+        public string Indicacao { get; set; }
 
         public DateTime CreatedAt { get; set; }
 

@@ -38,7 +38,6 @@ namespace Calcular.CoreApi.Controllers.Business
                             .OrderBy(x => x.Id)
                             .Select(x => new ProcessoViewModel
                             {
-                                Advogado = new Cliente { Id = x.Advogado.Id, Nome = x.Advogado.Nome },
                                 Numero = x.Numero,
                                 Id = x.Id,
                                 Autor = x.Autor,
@@ -46,6 +45,12 @@ namespace Calcular.CoreApi.Controllers.Business
                                 Honorario = x.Honorario,
                                 Prazo = x.Prazo,
                                 Total = x.Total,
+                                Vara = x.Vara,
+                                Advogado = new Cliente
+                                {
+                                    Id = x.Advogado.Id,
+                                    Nome = x.Advogado.Nome
+                                },
                             }).ToList();
 
             return Ok(query);
@@ -55,12 +60,55 @@ namespace Calcular.CoreApi.Controllers.Business
         [Route("numero")]
         public IActionResult GetByNumber([FromQuery] string filter)
         {
+            if (filter.Length < 3)
+                return BadRequest("Filtro deve conter no mínimo 3 caracteres.");
+
             var result = db.Processos
                             .Include(x => x.Advogado)
                             .Include(x => x.Honorarios)
                             .Include(x => x.ProcessoDetalhes).ThenInclude(x => x.User)
                             .Where(x => string.IsNullOrEmpty(filter)
                                              || x.Numero.Contains(filter))
+                            .Select(x => new ProcessoViewModel
+                            {
+                                Numero = x.Numero,
+                                Id = x.Id,
+                                Autor = x.Autor,
+                                Reu = x.Reu,
+                                Honorario = x.Honorario,
+                                Prazo = x.Prazo,
+                                Total = x.Total,
+                                Vara = x.Vara,
+                                Perito = x.Perito,
+                                Indicacao = x.Indicacao,
+                                Advogado = new Cliente
+                                {
+                                    Id = x.Advogado.Id,
+                                    Nome = x.Advogado.Nome
+                                },
+                                Honorarios = x.Honorarios.Select(h => new Honorario
+                                {
+                                    Id = h.Id,
+                                    Data = h.Data,
+                                    Registro = h.Registro,
+                                    Valor = h.Valor,
+                                    Prazo = h.Prazo,
+                                    Observacao = h.Observacao,
+                                    TipoPagamento = h.TipoPagamento,
+                                    NotaFiscal = h.NotaFiscal,
+                                }).ToList(),
+                                ProcessoDetalhes = x.ProcessoDetalhes.Select(p => new ProcessoDetalhe
+                                {
+                                    Id = p.Id,
+                                    Descricao = p.Descricao,
+                                    Data = p.Data,
+                                    User = new User
+                                    {
+                                        Id = p.User.Id,
+                                        Name = p.User.Name
+                                    }
+                                }).ToList()
+                            })
                             .ToList();
 
             return Ok(result);
@@ -72,8 +120,6 @@ namespace Calcular.CoreApi.Controllers.Business
             var result = db.Processos
                             .Include(x => x.Advogado)
                             .Include(x => x.Honorarios)
-                            .Include(x => x.Perito)
-                            .Include(x => x.Indicacao)
                             .Include(x => x.ProcessoDetalhes).ThenInclude(x => x.User)
                             .SingleOrDefault(x => x.Id == id);
 
@@ -86,6 +132,10 @@ namespace Calcular.CoreApi.Controllers.Business
             try
             {
                 db.Processos.Add(processo);
+
+                if (processo.Local == TipoJusticaEnum.Outro && string.IsNullOrEmpty(processo.Numero))
+                    processo.Numero = processo.Id.ToString();
+
                 db.SaveChanges();
             }
             catch (Exception ex)
@@ -133,7 +183,8 @@ namespace Calcular.CoreApi.Controllers.Business
             item.Parte = newItem.Parte;
             item.Vara = newItem.Vara;
             item.AdvogadoId = newItem.AdvogadoId;
-            item.IndicacaoId = newItem.IndicacaoId;
+            item.Indicacao = newItem.Indicacao;
+            item.Perito = newItem.Perito;
 
             db.SaveChanges();
             return Ok(item);
@@ -185,6 +236,32 @@ namespace Calcular.CoreApi.Controllers.Business
             var result = db.Processos.Where(x => string.IsNullOrEmpty(filter)
                                              || x.Vara.ContainsIgnoreNonSpacing(filter))
                                     .Select(x => x.Vara)
+                                    .Distinct()
+                                    .OrderBy(x => x)
+                                    .ToList();
+
+            return Ok(result);
+        }
+
+        [HttpGet("indicacao/{filter?}")]
+        public IActionResult GetIndicacao([FromQuery] string filter = "")
+        {
+            var result = db.Processos.Where(x => string.IsNullOrEmpty(filter)
+                                             || x.Indicacao.ContainsIgnoreNonSpacing(filter))
+                                    .Select(x => x.Indicacao)
+                                    .Distinct()
+                                    .OrderBy(x => x)
+                                    .ToList();
+
+            return Ok(result);
+        }
+
+        [HttpGet("perito/{filter?}")]
+        public IActionResult GetPerito([FromQuery] string filter = "")
+        {
+            var result = db.Processos.Where(x => string.IsNullOrEmpty(filter)
+                                             || x.Perito.ContainsIgnoreNonSpacing(filter))
+                                    .Select(x => x.Perito)
                                     .Distinct()
                                     .OrderBy(x => x)
                                     .ToList();

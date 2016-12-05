@@ -9,7 +9,7 @@ namespace Calcular.CoreApi.Models.Business
         public int Id { get; set; }
         
         public StatusEnum Status { get; set; }
-        public int Volumes { get; set; }
+        public string Volumes { get; set; }
         public DateTime Entrada { get; set; }
         public DateTime? Saida { get; set; }
         public DateTime? Prazo { get; set; }

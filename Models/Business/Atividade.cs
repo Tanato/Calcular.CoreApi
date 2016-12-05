@@ -5,12 +5,19 @@ namespace Calcular.CoreApi.Models.Business
 {
     public class Atividade
     {
+        public Atividade()
+        {
+            TipoExecucao = TipoExecucaoEnum.Pendente;
+            EtapaAtividade = EtapaAtividadeEnum.Original;
+        }
+
         public int Id { get; set; }
         public string Nome { get; set; }
         public DateTime? Entrega { get; set; }
         public decimal? Tempo { get; set; }
         public TipoImpressaoEnum? TipoImpressao { get; set; }
         public string Observacao { get; set; }
+        public string ObservacaoRevisor { get; set; }
 
         public int TipoAtividadeId { get; set; }
         public TipoAtividade TipoAtividade { get; set; }
@@ -25,14 +32,16 @@ namespace Calcular.CoreApi.Models.Business
         public int? AtividadeOrigemId { get; set; }
         public Atividade AtividadeOrigem { get; set; }
 
+        public EtapaAtividadeEnum EtapaAtividade { get; set; }
+
         public string Status
         {
             get
             {
-                if (Tempo != null || !string.IsNullOrEmpty(Observacao) || Entrega != null)
-                    return "Em Execução";
-                else
+                if (TipoExecucao == TipoExecucaoEnum.Pendente)
                     return "Pendente";
+                else
+                    return "Finalizado";
             }
         }
     }

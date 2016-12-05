@@ -28,13 +28,44 @@ namespace Calcular.CoreApi.Controllers.Business
         {
             var result = db.Atividades
                             .Include(x => x.Responsavel)
+                            .Include(x => x.Servico).ThenInclude(x => x.Processo).ThenInclude(x => x.Advogado)
                             .Include(x => x.TipoAtividade)
+                            .Select(x => new Atividade
+                            {
+                                Id = x.Id,
+                                Nome = x.Nome,
+                                Entrega = x.Entrega,
+                                Tempo = x.Tempo,
+                                ServicoId = x.ServicoId,
+                                Servico = new Servico
+                                {
+                                    Id = x.Servico.Id,
+                                    Prazo = x.Servico.Prazo,
+                                    Status = x.Servico.Status,
+                                    Processo = new Processo
+                                    {
+                                        Id = x.Servico.Processo.Id,
+                                        Numero = x.Servico.Processo.Numero,
+                                        Autor = x.Servico.Processo.Autor,
+                                        Reu = x.Servico.Processo.Reu,
+                                    }
+                                },
+                                EtapaAtividade = x.EtapaAtividade,
+                                AtividadeOrigemId = x.AtividadeOrigemId,
+                                TipoAtividadeId = x.TipoAtividadeId,
+                                TipoAtividade = new TipoAtividade
+                                {
+                                    Id = x.TipoAtividadeId,
+                                    Nome = x.TipoAtividade.Nome
+                                }
+
+                            })
                             .ToList();
             return Ok(result);
         }
 
         [HttpGet("currentuser")]
-        public async Task<IActionResult> GetAtividadesByUser([FromQuery] string filter)
+        public async Task<IActionResult> GetAtividadesByUser([FromQuery] string filter, [FromQuery] bool all = false)
         {
             var user = userManager.GetUserAsync(HttpContext.User).Result;
             var isRevisor = await userManager.IsInRoleAsync(user, "Revisor");
@@ -43,8 +74,37 @@ namespace Calcular.CoreApi.Controllers.Business
                             .Include(x => x.Responsavel)
                             .Include(x => x.Servico).ThenInclude(x => x.Processo).ThenInclude(x => x.Advogado)
                             .Include(x => x.TipoAtividade)
-                            .Where(x => x.ResponsavelId == user.Id
-                                        || (isRevisor && x.TipoAtividade.Nome == "Revisão"))
+                            .Where(x => (x.ResponsavelId == user.Id || (isRevisor && x.EtapaAtividade == EtapaAtividadeEnum.Revisao)) // Filtra por usuário ou revisor
+                                        && (all || x.TipoExecucao == TipoExecucaoEnum.Pendente)) // Filtra atividades pendentes
+                            .Select(x => new Atividade
+                            {
+                                Id = x.Id,
+                                Nome = x.Nome,
+                                Entrega = x.Entrega,
+                                Tempo = x.Tempo,
+                                ServicoId = x.ServicoId,
+                                Servico = new Servico
+                                {
+                                    Id = x.Servico.Id,
+                                    Prazo = x.Servico.Prazo,
+                                    Status = x.Servico.Status,
+                                    Processo = new Processo
+                                    {
+                                        Id = x.Servico.Processo.Id,
+                                        Numero = x.Servico.Processo.Numero,
+                                        Autor = x.Servico.Processo.Autor,
+                                        Reu = x.Servico.Processo.Reu,
+                                    }
+                                },
+                                EtapaAtividade = x.EtapaAtividade,
+                                AtividadeOrigemId = x.AtividadeOrigemId,
+                                TipoAtividadeId = x.TipoAtividadeId,
+                                TipoAtividade = new TipoAtividade
+                                {
+                                    Id = x.TipoAtividadeId,
+                                    Nome = x.TipoAtividade.Nome
+                                }
+                            })
                             .ToList();
             return Ok(result);
         }
@@ -66,9 +126,6 @@ namespace Calcular.CoreApi.Controllers.Business
         [HttpPost]
         public IActionResult Post([FromBody] Atividade atividade)
         {
-            if (db.TipoAtividades.Single(x => x.Id == atividade.TipoAtividadeId).Nome == "Revisão")
-                return BadRequest("Atividade do tipo Revisão não pode ser criada diretamente.");
-
             db.Atividades.Add(atividade);
             db.SaveChanges();
 
@@ -80,8 +137,11 @@ namespace Calcular.CoreApi.Controllers.Business
         {
             var item = db.Atividades.Single(x => x.Id == newItem.Id);
 
-            if (item.TipoAtividade.Nome == "Revisão" && newItem.TipoAtividade.Nome != "Revisão")
-                return BadRequest("Atividade do tipo Revisão não pode ser alterada.");
+            if (item.EtapaAtividade == EtapaAtividadeEnum.Revisao || newItem.EtapaAtividade == EtapaAtividadeEnum.Revisao)
+                return BadRequest("Atividade de Revisão não pode ser alterada.");
+
+            if (item.EtapaAtividade == EtapaAtividadeEnum.Refazer || newItem.EtapaAtividade == EtapaAtividadeEnum.Refazer)
+                return BadRequest("Atividade para Refazer não pode ser alterada.");
 
             item.Nome = newItem.Nome;
             item.Entrega = newItem.Entrega;
@@ -100,7 +160,7 @@ namespace Calcular.CoreApi.Controllers.Business
         {
             var item = db.Atividades.Single(x => x.Id == id);
 
-            if (item.Tempo != null || !string.IsNullOrEmpty(item.Observacao) || item.Entrega != null)
+            if (item.TipoExecucao != TipoExecucaoEnum.Pendente)
                 return BadRequest("Atividade não pode ser excluída");
 
             db.Atividades.Remove(item);
@@ -108,10 +168,16 @@ namespace Calcular.CoreApi.Controllers.Business
             return Ok(item);
         }
 
-        [HttpGet("responsavel/{id}")]
-        public IActionResult GetResponsavel(int id)
+        [HttpGet("responsavel")]
+        public IActionResult GetResponsavel()
         {
-            var item = db.Users.Select(x => new KeyValuePair<string, string>(x.Id, x.Name));
+            var item = db.Users
+                            .ToList()
+                            .Where(x => (userManager.IsInRoleAsync(x, "Calculista").Result
+                                        || userManager.IsInRoleAsync(x, "Revisor").Result
+                                        || userManager.IsInRoleAsync(x, "Gerencial").Result)
+                                     && !userManager.IsInRoleAsync(x, "Inativo").Result)
+                            .Select(x => new KeyValuePair<string, string>(x.Id, x.Name));
             return Ok(item);
         }
 

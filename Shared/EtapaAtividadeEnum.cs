@@ -6,14 +6,12 @@ using System.Threading.Tasks;
 
 namespace Calcular.CoreApi.Shared
 {
-    public enum TipoExecucaoEnum
+    public enum EtapaAtividadeEnum
     {
-        Pendente,
+        Original,
 
-        Finalizado,
-
-        [Description("Revisar")]
-        Revisar,
+        [Description("Revisão")]
+        Revisao,
 
         Refazer,
     }
