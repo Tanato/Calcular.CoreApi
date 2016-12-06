@@ -10,7 +10,7 @@ namespace Calcular.CoreApi.Models.Business
 
         public string Numero { get; set; }
         public string Contato { get; set; }
-        public int ContatoId { get; set; }
+        public int? ContatoId { get; set; }
         public TipoJusticaEnum Local { get; set; }
         public string Email { get; set; }
         public string Celular { get; set; }
@@ -24,8 +24,8 @@ namespace Calcular.CoreApi.Models.Business
         public string Observacao { get; set; }
 
         public bool Fechado { get; set; }
-        public MotivoEnum Motivo { get; set; }
-        public string MovitoDetalhe { get; set; }
+        public MotivoEnum? Motivo { get; set; }
+        public string MotivoDetalhe { get; set; }
 
         public string UsuarioId { get; set; }
         public User Usuario { get; set; }

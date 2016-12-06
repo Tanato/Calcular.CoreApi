@@ -37,7 +37,7 @@ namespace Calcular.CoreApi.Controllers.Business
                                              || x.Autor.Contains(filter)
                                              || x.Advogado.Nome.Contains(filter))
                                              .OrderBy(x => x.Id)
-                            .Select(x => new ProcessoViewModel
+                            .Select(x => new
                             {
                                 Advogado = new Cliente { Id = x.Advogado.Id, Nome = x.Advogado.Nome },
                                 Numero = x.Numero,
@@ -47,7 +47,15 @@ namespace Calcular.CoreApi.Controllers.Business
                                 Honorario = x.Honorario,
                                 Prazo = x.Prazo,
                                 Total = x.Total,
-                            }).ToList(); ;
+                                Cobrancas = x.Cobrancas.Select(c => new Cobranca
+                                {
+                                    Contato = c.Contato,
+                                    Id = c.Id,
+                                    PrevisaoPagamento = c.PrevisaoPagamento,
+                                    DataCobranca = c.DataCobranca,
+                                    ValorPendente = c.ValorPendente,
+                                }).ToList()
+                            }).ToList();
 
             return Ok(result.ToList());
         }

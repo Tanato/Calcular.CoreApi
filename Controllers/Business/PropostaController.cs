@@ -39,6 +39,9 @@ namespace Calcular.CoreApi.Controllers.Business
                                 Id = x.Id,
                                 Telefone = x.Telefone,
                                 Celular = x.Celular,
+                                Honorario = x.Honorario,
+                                DataProposta = x.DataProposta,
+                                Fechado = x.Fechado,
                             })
                             .ToList();
 
@@ -68,7 +71,10 @@ namespace Calcular.CoreApi.Controllers.Business
 
         [HttpPost]
         public IActionResult PostProposta([FromBody] Proposta proposta)
-        {
+        {            
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             var user = userManager.GetUserAsync(HttpContext.User).Result;
 
             proposta.UsuarioId = user.Id;
@@ -77,6 +83,36 @@ namespace Calcular.CoreApi.Controllers.Business
             db.SaveChanges();
 
             return Ok(proposta);
+        }
+
+        [HttpPut]
+        public IActionResult PutProposta([FromBody] Proposta proposta)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var item = db.Propostas.Single(x => x.Id == proposta.Id);
+
+            var user = userManager.GetUserAsync(HttpContext.User).Result;
+            item .UsuarioId = user.Id;
+
+            item.Celular = proposta.Celular;
+            item.Local = proposta.Local;
+            item.Honorario = proposta.Honorario;
+            item.Motivo = proposta.Motivo;
+            item.MotivoDetalhe = proposta.MotivoDetalhe;
+            item.Numero = proposta.Numero;
+            item.DataProposta = proposta.DataProposta;
+            item.ComoChegou = proposta.ComoChegou;
+            item.ComoChegouDetalhe = proposta.ComoChegouDetalhe;
+            item.Contato = proposta.Contato;
+            item.ContatoId = proposta.ContatoId;
+            item.Fechado = proposta.Fechado;
+            item.Telefone = proposta.Telefone;
+            item.Observacao = proposta.Observacao;
+            
+            db.SaveChanges();
+            return Ok();
         }
 
         [HttpDelete("{id}")]
@@ -88,7 +124,6 @@ namespace Calcular.CoreApi.Controllers.Business
             db.Propostas.Remove(item);
             db.SaveChanges();
             return Ok(item);
-
         }
 
         [HttpGet("contato/{filter?}")]

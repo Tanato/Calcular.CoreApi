@@ -8,9 +8,10 @@ using Calcular.CoreApi.Models;
 namespace Calcular.CoreApi.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20161205231636_v0.0.5")]
+    partial class v005
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
             modelBuilder
                 .HasAnnotation("ProductVersion", "1.0.1")
@@ -231,7 +232,7 @@ namespace Calcular.CoreApi.Migrations
 
                     b.Property<int>("Local");
 
-                    b.Property<int?>("Motivo");
+                    b.Property<int>("Motivo");
 
                     b.Property<string>("MotivoDetalhe");
 

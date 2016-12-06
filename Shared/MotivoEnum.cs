@@ -8,11 +8,11 @@ namespace Calcular.CoreApi.Shared
 {
     public enum MotivoEnum
     {
-        [Description("Outro")]
-        Outro,
         [Description("Valor")]
         Valor,
         [Description("Demora Retorno")]
         DemoraRetorno,
+        [Description("Outro")]
+        Outro,
     }
 }
