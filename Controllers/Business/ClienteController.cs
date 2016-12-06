@@ -12,6 +12,7 @@ using System.Reflection;
 using Calcular.CoreApi.Models.Business;
 using Microsoft.AspNetCore.Authorization;
 using System.Globalization;
+using Microsoft.EntityFrameworkCore;
 
 namespace Calcular.CoreApi.Controllers.Business
 {
@@ -29,10 +30,10 @@ namespace Calcular.CoreApi.Controllers.Business
         public IActionResult GetAll([FromQuery] string filter)
         {
             var result = db.Clientes.Where(x => string.IsNullOrEmpty(filter)
-                                             || x.Nome.ContainsIgnoreNonSpacing(filter)
-                                             || x.Email.Contains(filter)
-                                             || x.Empresa.ContainsIgnoreNonSpacing(filter)
-                                             || x.Celular.Contains(filter))
+                                             || (!string.IsNullOrEmpty(x.Nome) && x.Nome.ContainsIgnoreNonSpacing(filter))
+                                             || (!string.IsNullOrEmpty(x.Email) && x.Email.Contains(filter))
+                                             || (!string.IsNullOrEmpty(x.Empresa) && x.Empresa.ContainsIgnoreNonSpacing(filter))
+                                             || (!string.IsNullOrEmpty(x.Celular) && x.Celular.Contains(filter)))
                                     .OrderBy(x => x.Nome);
 
             return Ok(result.ToList());
@@ -44,7 +45,7 @@ namespace Calcular.CoreApi.Controllers.Business
             var result = db.Clientes.Where(x => string.IsNullOrEmpty(filter)
                                              || x.Nome.ContainsIgnoreNonSpacing(filter))
                                     .OrderBy(x => x.Nome)
-                                    .Select(x => new KeyValuePair<int, string>(x.Id, x.Nome)).ToList();
+                                    .ToList();
 
             return Ok(result);
         }
@@ -66,7 +67,7 @@ namespace Calcular.CoreApi.Controllers.Business
         [HttpPost]
         public IActionResult PostCliente([FromBody] Cliente cliente)
         {
-            cliente.Nascimento = cliente.Nascimento.Date.AddHours(12);
+            cliente.Nascimento = cliente.Nascimento?.Date.AddHours(12);
             try
             {
                 db.Clientes.Add(cliente);
@@ -91,7 +92,7 @@ namespace Calcular.CoreApi.Controllers.Business
             item.Telefone2 = newItem.Telefone2;
             item.Celular = newItem.Celular;
             item.Celular2 = newItem.Celular2;
-            item.Nascimento = newItem.Nascimento.Date.AddHours(12);
+            item.Nascimento = newItem.Nascimento?.Date.AddHours(12);
             item.Perfil = newItem.Perfil;
             item.Empresa = newItem.Empresa;
             item.Honorarios = newItem.Honorarios;
@@ -106,10 +107,21 @@ namespace Calcular.CoreApi.Controllers.Business
         [HttpDelete("{id}")]
         public IActionResult DeleteCliente(int id)
         {
-            var item = db.Clientes.Single(x => x.Id == id);
-            db.Clientes.Remove(item);
-            db.SaveChanges();
-            return Ok(item);
+            var item = db.Clientes
+                        .Include(x => x.Processos)
+                        .Include(x => x.Honorarios)
+                        .Single(x => x.Id == id);
+
+            if (item.Processos?.Count > 0)
+            {
+                return BadRequest("O processo possúi Honorários/Serviços associados e não pode ser excluído");
+            }
+            else
+            {
+                db.Clientes.Remove(item);
+                db.SaveChanges();
+                return Ok(item);
+            }
         }
 
         [Route("perfil")]

@@ -1,4 +1,5 @@
 ﻿using Calcular.CoreApi.Models;
+using Calcular.CoreApi.Models.Business;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -16,11 +17,47 @@ namespace Calcular.CoreApi.Controllers.Business
         {
             this.db = db;
         }
-        
+
         [HttpGet]
         public IActionResult GetAll()
         {
-            return Ok(db.TipoAtividades.ToList());
+            return Ok(db.TipoAtividades.Where(x => x.Nome != "Revisão").ToList());
+        }
+
+        [HttpGet("select")]
+        public IActionResult GetSelect()
+        {
+            return Ok(db.TipoAtividades.Select(x => new KeyValuePair<int, string>(x.Id, x.Nome)));
+        }
+
+        [HttpPost]
+        public IActionResult Post([FromBody] TipoAtividade tipoAtividade)
+        {
+            if (string.IsNullOrEmpty(tipoAtividade.Nome))
+                return BadRequest("Nome do tipo de atividade não pode ser nulo");
+            else if (db.TipoAtividades.Any(x => x.Nome == tipoAtividade.Nome))
+                return BadRequest("Já existe uma atividade com este nome.");
+
+
+            db.TipoAtividades.Add(tipoAtividade);
+            db.SaveChanges();
+            return Ok();
+        }
+
+        [HttpDelete("{id}")]
+        public IActionResult Delete(int id)
+        {
+            if (db.Atividades.Any(x => x.TipoAtividadeId == id))
+                return BadRequest("Existem atividades cadastradas com este tipo, tipo não pode ser excluído");            
+
+            var item = db.TipoAtividades.Single(x => x.Id == id);
+
+            if (item.Nome == "Revisão")
+                return BadRequest("Atividade padrão do sistema, não pode ser excluída.");
+
+            db.TipoAtividades.Remove(item);
+            db.SaveChanges();
+            return Ok(item);
         }
     }
 }

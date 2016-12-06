@@ -16,6 +16,8 @@ namespace Calcular.CoreApi.Models
         public DbSet<Servico> Servicos { get; set; }
         public DbSet<Honorario> Honorarios { get; set; }
         public DbSet<ProcessoDetalhe> ProcessoDetalhes { get; set; }
+        public DbSet<Cobranca> Cobrancas { get; set; }
+        public DbSet<Proposta> Propostas { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -28,6 +30,10 @@ namespace Calcular.CoreApi.Models
             builder.Entity<IdentityUserRole<string>>().ToTable("UserRoles");
             builder.Entity<IdentityRoleClaim<string>>().ToTable("RoleClaims");
             builder.Entity<IdentityRole>().ToTable("Roles");
+
+            builder.Entity<TipoAtividade>().HasAlternateKey(x => x.Nome);
+            // builder.Entity<Cliente>().HasAlternateKey(x => x.Email);
+            // builder.Entity<Processo>().HasAlternateKey(x => x.Numero);
         }
     }
 }

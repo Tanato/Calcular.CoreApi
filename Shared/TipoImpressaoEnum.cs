@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.ComponentModel;
 
 namespace Calcular.CoreApi.Shared
 {
@@ -9,6 +6,7 @@ namespace Calcular.CoreApi.Shared
     {
         Word,
         Excel,
+        [Description("Word + Excel")]
         WordExcel,
     }
 }

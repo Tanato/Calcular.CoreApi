@@ -15,8 +15,8 @@ namespace MovieAngularJSApp.Controllers
     [Route("api/[controller]")]
     public class AccountController : Controller
     {
-        private UserManager<User> userManager;
-        private SignInManager<User> signInManager;
+        private readonly UserManager<User> userManager;
+        private readonly SignInManager<User> signInManager;
         private readonly ApplicationDbContext db;
 
         public AccountController(UserManager<User> userManager, SignInManager<User> signInManager, ApplicationDbContext db)
@@ -28,24 +28,32 @@ namespace MovieAngularJSApp.Controllers
 
         [HttpPost("login")]
         [AllowAnonymous]
-        public async Task<IActionResult> Login([FromBody] LoginViewModel login)
+        public async Task<IActionResult> LoginAsync([FromBody] LoginViewModel login)
         {
             var result = await signInManager.PasswordSignInAsync(login.UserName, login.Password, false, false);
             if (result.Succeeded)
             {
-                return Ok();
+                if (db.Users.Single(x => x.UserName == login.UserName).Inativo)
+                    return BadRequest("Usuário Inativo");
+                else
+                    return Ok();
             }
             ModelState.AddModelError("Error", "Invalid username or password.");
             return BadRequest(ModelState);
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterViewModel model)
+        public async Task<IActionResult> RegisterAsync([FromBody] RegisterViewModel model)
         {
             if (ModelState.IsValid)
             {
-                var user = new User { Name = model.Name, UserName = model.UserName, Email = model.Email, BirthDate = model.BirthDate.Date.AddHours(12) };
-                var result = await userManager.CreateAsync(user, "password123");
+                var user = new User { Name = model.Name, UserName = model.UserName, Email = model.Email, BirthDate = model.BirthDate.Date.AddHours(12), Inativo = model.Inativo };
+                var result =
+                    await userManager.CreateAsync(user, "senha123");
+
+                foreach (var role in model.Roles)
+                    await userManager.AddToRoleAsync(user, db.Roles.Single(x => x.Id == role).Name);
+
                 if (result.Succeeded)
                 {
                     return Ok();
@@ -66,13 +74,17 @@ namespace MovieAngularJSApp.Controllers
         {
             if (ModelState.IsValid)
             {
-                var user = db.Users.Single(x => x.UserName == model.UserName);
+                var user = await userManager.FindByNameAsync(model.UserName);
+                var userRoles = await userManager.GetRolesAsync(user);
+
+                await userManager.RemoveFromRolesAsync(user, userRoles);
+                foreach (var role in model.Roles)
+                    await userManager.AddToRoleAsync(user, db.Roles.Single(x => x.Id == role).Name);
 
                 user.Email = model.Email;
                 user.BirthDate = model.BirthDate.Date.AddHours(12);
                 user.Name = model.Name;
-
-                // ToDo: Update user profiles
+                user.Inativo = model.Inativo;
 
                 var result = await userManager.UpdateAsync(user);
                 if (result.Succeeded)
@@ -123,6 +135,12 @@ namespace MovieAngularJSApp.Controllers
         public async Task<IActionResult> GetLoggedUser()
         {
             var user = await userManager.GetUserAsync(HttpContext.User);
+            if (user == null)
+            {
+                await signInManager.SignOutAsync();
+                return Unauthorized();
+            }
+
             return Ok(new { Name = user.Name, BirthDate = user.BirthDate, Email = user.Email, Login = user.UserName });
         }
     }

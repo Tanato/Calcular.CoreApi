@@ -1,7 +1,9 @@
 ﻿using Calcular.CoreApi.Models;
 using Calcular.CoreApi.Models.Business;
+using Calcular.CoreApi.Shared;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Calcular.CoreApi.Controllers.Business
@@ -31,7 +33,7 @@ namespace Calcular.CoreApi.Controllers.Business
         [HttpGet("{id}")]
         public IActionResult GetById(int id)
         {
-            var result = db.Honorarios.Single(x => x.Id == id);
+            var result = db.Honorarios.SingleOrDefault(x => x.Id == id);
             return Ok(result);
         }
 
@@ -73,6 +75,37 @@ namespace Calcular.CoreApi.Controllers.Business
             db.Honorarios.Remove(item);
             db.SaveChanges();
             return Ok(item);
+        }
+
+        [Route("registro")]
+        [HttpGet]
+        public IActionResult GetLocal()
+        {
+            var result = Enum.GetValues(typeof(RegistroEnum))
+                            .Cast<RegistroEnum>()
+                            .Select(x => new KeyValuePair<int, string>((int)x, EnumHelpers.GetEnumDescription(x)));
+            return Ok(result);
+        }
+
+        [Route("tipopagamento/{registro}")]
+        [HttpGet]
+        public IActionResult GetParte(RegistroEnum registro)
+        {
+            switch (registro)
+            {
+                case RegistroEnum.Honorario:
+                    return Ok(Enum.GetValues(typeof(TipoRegistroEnum))
+                                 .Cast<TipoRegistroEnum>()
+                                 .Where(x => (int)x <= 3)
+                                 .Select(x => new KeyValuePair<int, string>((int)x, EnumHelpers.GetEnumDescription(x))));
+                case RegistroEnum.Pagamento:
+                    return Ok(Enum.GetValues(typeof(TipoRegistroEnum))
+                                .Cast<TipoRegistroEnum>()
+                                 .Where(x => (int)x > 3)
+                                .Select(x => new KeyValuePair<int, string>((int)x, EnumHelpers.GetEnumDescription(x))));
+                default:
+                    return BadRequest();
+            }
         }
     }
 }
