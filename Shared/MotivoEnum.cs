@@ -10,7 +10,7 @@ namespace Calcular.CoreApi.Shared
     {
         [Description("Valor")]
         Valor,
-        [Description("Demora Retorno")]
+        [Description("Tempo de Retorno")]
         DemoraRetorno,
         [Description("Outro")]
         Outro,

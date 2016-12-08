@@ -1,5 +1,6 @@
 ﻿using Calcular.CoreApi.Models;
 using Calcular.CoreApi.Models.Business;
+using Calcular.CoreApi.Shared;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -20,14 +21,20 @@ namespace Calcular.CoreApi.Controllers.Business
         [HttpGet]
         public IActionResult GetAll([FromQuery] string filter)
         {
+            var pendente = filter.ContainsIgnoreNonSpacing("pendente");
+            var entregue = filter.ContainsIgnoreNonSpacing("entregue");
+
             var result = db.Servicos
                             .Include(x => x.Processo).ThenInclude(x => x.Advogado)
                             .Include(x => x.Atividades).ThenInclude(x => x.Responsavel)
+                            .Include(x => x.Atividades).ThenInclude(x => x.TipoAtividade)
                             .Where(x => string.IsNullOrEmpty(filter)
                                         || x.Processo.Numero.Contains(filter)
                                         || x.Processo.Advogado.Nome.Contains(filter)
                                         || x.Processo.Advogado.Telefone.Contains(filter)
-                                        || x.Processo.Advogado.Celular.Contains(filter))
+                                        || x.Processo.Advogado.Celular.Contains(filter)
+                                        || (pendente && x.Status == StatusEnum.Pendente)
+                                        || (entregue && x.Status == StatusEnum.Entregue))
                             .ToList()
                             .Select(x => new Servico
                             {
@@ -166,7 +173,12 @@ namespace Calcular.CoreApi.Controllers.Business
             item.Volumes = model.Volumes;
             item.Entrada = model.Entrada;
             item.Prazo = model.Prazo;
-            item.Saida = model.Saida;
+
+            if (model.Saida != null)
+            {
+                item.Saida = model.Saida;
+                item.Status = StatusEnum.Entregue;
+            }
 
             db.SaveChanges();
 

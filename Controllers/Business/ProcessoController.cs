@@ -34,7 +34,8 @@ namespace Calcular.CoreApi.Controllers.Business
                             .Where(x => string.IsNullOrEmpty(filter)
                                         || x.Numero.Contains(filter)
                                         || x.Reu.Contains(filter)
-                                        || x.Autor.Contains(filter))
+                                        || x.Autor.Contains(filter)
+                                        || x.Advogado.Nome.Contains(filter))
                             .OrderBy(x => x.Id)
                             .ToList()
                             .Select(x => new ProcessoViewModel
@@ -50,7 +51,8 @@ namespace Calcular.CoreApi.Controllers.Business
                                 Advogado = new Cliente
                                 {
                                     Id = x.Advogado.Id,
-                                    Nome = x.Advogado.Nome
+                                    Nome = x.Advogado.Nome,
+                                    Empresa = x.Advogado.Empresa,
                                 },
                             }).ToList();
 
@@ -80,6 +82,10 @@ namespace Calcular.CoreApi.Controllers.Business
                                 Honorario = x.Honorario,
                                 Prazo = x.Prazo,
                                 Total = x.Total,
+                                Parte = x.Parte,
+                                Local = x.Local,
+                                NumeroAutores = x.NumeroAutores,
+                                AdvogadoId = x.AdvogadoId,
                                 Vara = x.Vara,
                                 Perito = x.Perito,
                                 Indicacao = x.Indicacao,
@@ -133,6 +139,15 @@ namespace Calcular.CoreApi.Controllers.Business
         {
             try
             {
+                if (processo.Id != 0)
+                    return BadRequest("Para atualizar um processo existente, utilizar o método PUT");
+
+                processo.Advogado = null;
+                processo.CreatedAt = DateTime.Now;
+                processo.Honorarios = null;
+                processo.ProcessoDetalhes = null;
+                processo.Servicos = null;
+
                 db.Processos.Add(processo);
 
                 if (processo.Local == TipoJusticaEnum.Outro && string.IsNullOrEmpty(processo.Numero))
@@ -143,7 +158,10 @@ namespace Calcular.CoreApi.Controllers.Business
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
+                return BadRequest(ex.Message + ex.InnerException.Message);
             }
+
+            processo.Advogado = db.Clientes.SingleOrDefault(x => x.Id == processo.AdvogadoId);
             return Ok(processo);
         }
 
