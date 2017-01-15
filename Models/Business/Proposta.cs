@@ -19,11 +19,11 @@ namespace Calcular.CoreApi.Models.Business
         public ComoChegouEnum ComoChegou { get; set; }
         public string ComoChegouDetalhe { get; set; }
 
-        public int Honorario { get; set; }
+        public decimal? Honorario { get; set; }
         public DateTime? DataProposta { get; set; }
         public string Observacao { get; set; }
 
-        public bool Fechado { get; set; }
+        public bool? Fechado { get; set; }
         public MotivoEnum? Motivo { get; set; }
         public string MotivoDetalhe { get; set; }
 

@@ -108,6 +108,7 @@ namespace Calcular.CoreApi.Controllers.Business
             item.ComoChegou = newItem.ComoChegou;
             item.ComoChegouDetalhe = newItem.ComoChegouDetalhe;
             item.Observacao = newItem.Observacao;
+            item.Vara = newItem.Vara;
 
             db.SaveChanges();
             return Ok(item);

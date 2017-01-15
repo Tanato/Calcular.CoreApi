@@ -30,6 +30,7 @@ namespace Calcular.CoreApi.Controllers.Business
                             .Include(x => x.Responsavel)
                             .Include(x => x.Servico).ThenInclude(x => x.Processo).ThenInclude(x => x.Advogado)
                             .Include(x => x.TipoAtividade)
+                            .Include(x => x.AtividadeOrigem)
                             .Select(x => new Atividade
                             {
                                 Id = x.Id,
@@ -74,8 +75,10 @@ namespace Calcular.CoreApi.Controllers.Business
                             .Include(x => x.Responsavel)
                             .Include(x => x.Servico).ThenInclude(x => x.Processo).ThenInclude(x => x.Advogado)
                             .Include(x => x.TipoAtividade)
+                            .Include(x => x.AtividadeOrigem)
                             .Where(x => (x.ResponsavelId == user.Id || (isRevisor && x.EtapaAtividade == EtapaAtividadeEnum.Revisao)) // Filtra por usuário ou revisor
                                         && (all || x.TipoExecucao == TipoExecucaoEnum.Pendente)) // Filtra atividades pendentes
+                            .ToList()
                             .Select(x => new Atividade
                             {
                                 Id = x.Id,
@@ -98,6 +101,15 @@ namespace Calcular.CoreApi.Controllers.Business
                                 },
                                 EtapaAtividade = x.EtapaAtividade,
                                 AtividadeOrigemId = x.AtividadeOrigemId,
+                                AtividadeOrigem = x.AtividadeOrigem == null ? null : new Atividade
+                                {
+                                    Id = x.AtividadeOrigem.Id,
+                                    Responsavel = new User
+                                    {
+                                        Id = x.AtividadeOrigem.Responsavel.Id,
+                                        Name = x.AtividadeOrigem.Responsavel.Name,
+                                    }
+                                },
                                 TipoAtividadeId = x.TipoAtividadeId,
                                 TipoAtividade = new TipoAtividade
                                 {
@@ -142,7 +154,7 @@ namespace Calcular.CoreApi.Controllers.Business
 
             if (item.EtapaAtividade == EtapaAtividadeEnum.Refazer || newItem.EtapaAtividade == EtapaAtividadeEnum.Refazer)
                 return BadRequest("Atividade para Refazer não pode ser alterada.");
-            
+
             item.Entrega = newItem.Entrega;
             item.Tempo = newItem.Tempo;
             item.TipoImpressao = newItem.TipoImpressao;
