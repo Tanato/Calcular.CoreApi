@@ -141,7 +141,16 @@ namespace MovieAngularJSApp.Controllers
                 return Unauthorized();
             }
 
-            return Ok(new { Name = user.Name, BirthDate = user.BirthDate, Email = user.Email, Login = user.UserName });
+            var roles = await userManager.GetRolesAsync(user);
+
+            return Ok(new
+            {
+                Name = user.Name,
+                BirthDate = user.BirthDate,
+                Email = user.Email,
+                Login = user.UserName,
+                Roles = roles,
+            });
         }
     }
 }

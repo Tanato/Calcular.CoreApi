@@ -40,33 +40,34 @@ namespace Calcular.CoreApi.Controllers.Business
                                              .OrderBy(x => x.Id)
                             .ToList()
                             .Where(x => all || x.Total > 0)
-                            .Select(x =>
-                            {
-                                var ultimaCobranca = x.Cobrancas.OrderByDescending(c => c.DataCobranca).FirstOrDefault();
-                                return new
-                                {
-                                    Advogado = new Cliente { Id = x.Advogado.Id, Nome = x.Advogado.Nome },
-                                    Numero = x.Numero,
-                                    Id = x.Id,
-                                    Autor = x.Autor,
-                                    Reu = x.Reu,
-                                    Honorario = x.Honorario,
-                                    Prazo = x.Prazo,
-                                    Total = x.Total,
-                                    DataUltimaCobranca = ultimaCobranca != null ? (DateTime?)ultimaCobranca.DataCobranca : null,
-                                    PrevisaoPagamento = ultimaCobranca != null ? (DateTime?)ultimaCobranca.PrevisaoPagamento : null,
-                                    ValorPendente = x.Total,
-                                    Cobrancas = x.Cobrancas.Select(c => new Cobranca
-                                    {
-                                        Contato = c.Contato,
-                                        Id = c.Id,
-                                        PrevisaoPagamento = c.PrevisaoPagamento,
-                                        DataCobranca = c.DataCobranca,
-                                        ValorPendente = c.ValorPendente,
-                                    }).ToList()
-                                };
-                            })
-                            .OrderByDescending(x => x.DataUltimaCobranca)
+                            //.Select(x =>
+                            //{
+                            //    var ultimaCobranca = x.Cobrancas.OrderByDescending(c => c.DataCobranca).FirstOrDefault();
+                            //    return new
+                            //    {
+                            //        Advogado = new Cliente { Id = x.Advogado.Id, Nome = x.Advogado.Nome },
+                            //        Numero = x.Numero,
+                            //        Id = x.Id,
+                            //        Autor = x.Autor,
+                            //        Reu = x.Reu,
+                            //        Honorario = x.Honorario,
+                            //        Prazo = x.Prazo,
+                            //        Total = x.Total,
+                            //        DataUltimaCobranca = ultimaCobranca != null ? (DateTime?)ultimaCobranca.DataCobranca : null,
+                            //        PrevisaoPagamento = ultimaCobranca != null ? (DateTime?)ultimaCobranca.PrevisaoPagamento : null,
+                            //        ValorPendente = x.Total,
+                            //        Cobrancas = x.Cobrancas.Select(c => new Cobranca
+                            //        {
+                            //            Contato = c.Contato,
+                            //            Id = c.Id,
+                            //            PrevisaoPagamento = c.PrevisaoPagamento,
+                            //            DataCobranca = c.DataCobranca,
+                            //            ValorPendente = c.ValorPendente,
+                            //        })
+                            //        .ToList()
+                            //    };
+                            //})
+                            //.OrderByDescending(x => x.DataUltimaCobranca)
                             .ToList();
 
             return Ok(result);

@@ -18,6 +18,7 @@ namespace Calcular.CoreApi.Models
         public DbSet<ProcessoDetalhe> ProcessoDetalhes { get; set; }
         public DbSet<Cobranca> Cobrancas { get; set; }
         public DbSet<Proposta> Propostas { get; set; }
+        public DbSet<Comissao> Comissoes { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
