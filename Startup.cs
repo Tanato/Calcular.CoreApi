@@ -89,6 +89,7 @@ namespace Calcular.CoreApi
                 .AddJsonOptions(options =>
                 {
                     options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
+                    options.SerializerSettings.DateFormatString = "yyyy-MM-ddThh:mm:ss-03:00";
                 });
 
             services.AddSwaggerGen();

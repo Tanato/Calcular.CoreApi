@@ -119,7 +119,6 @@ namespace Calcular.CoreApi.Controllers.Business
         {
             var item = db.Clientes
                         .Include(x => x.Processos)
-                        .Include(x => x.Honorarios)
                         .Single(x => x.Id == id);
 
             if (item.Processos?.Count > 0)

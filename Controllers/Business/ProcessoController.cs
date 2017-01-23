@@ -37,27 +37,28 @@ namespace Calcular.CoreApi.Controllers.Business
                                         || x.Autor.Contains(filter)
                                         || x.Advogado.Nome.Contains(filter))
                             .OrderBy(x => x.Id)
-                            //.ToList()
-                            //.Select(x => new ProcessoViewModel
-                            //{
-                            //    Numero = x.Numero,
-                            //    Id = x.Id,
-                            //    Autor = x.Autor,
-                            //    Reu = x.Reu,
-                            //    Honorario = x.Honorario,
-                            //    Prazo = x.Prazo,
-                            //    Total = x.Total,
-                            //    Vara = x.Vara,
-                            //    Advogado = new Cliente
-                            //    {
-                            //        Id = x.Advogado.Id,
-                            //        Nome = x.Advogado.Nome,
-                            //        Empresa = x.Advogado.Empresa,
-                            //    },
-                            //})
                             .ToList();
 
             return Ok(query);
+        }
+
+        [HttpGet("paged")]
+        public IActionResult GetPaged([FromQuery] string filter, int itemsPerPage, int page = 1)
+        {
+            var query = db.Processos
+                            .Include(x => x.Advogado)
+                            .Include(x => x.Honorarios)
+                            .Where(x => string.IsNullOrEmpty(filter)
+                                        || x.Numero.Contains(filter)
+                                        || x.Reu.Contains(filter)
+                                        || x.Autor.Contains(filter)
+                                        || x.Advogado.Nome.Contains(filter));
+                            
+            var table = query.OrderBy(x => x.Id)
+                            .Skip((page - 1) * itemsPerPage).Take(itemsPerPage)
+                            .ToList();
+
+            return Ok(new { data = table, totalItems = query.Count() });
         }
 
         [HttpGet]

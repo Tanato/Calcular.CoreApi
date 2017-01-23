@@ -71,7 +71,7 @@ namespace Calcular.CoreApi.Controllers.Business
                        Id = x.Id,
                        Evento = "Prazo do Processo",
                        Detalhe = x.Processo.Numero,
-                       Responsavel = string.Join(";", x.Atividades.Select(k => k.Responsavel != null ? k.Responsavel.Name : "")),
+                       Responsavel = string.Join("; ", x.Atividades.Select(k => k.Responsavel != null ? k.Responsavel.Name : "")),
                        Data = x.Prazo.Value,
                        Status = x.Saida.HasValue ? "Entregue"
                                 : x.Atividades.All(k => k.TipoExecucao == TipoExecucaoEnum.Finalizado) ? "Enviar"
