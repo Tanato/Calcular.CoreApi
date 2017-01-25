@@ -4,6 +4,7 @@ using Calcular.CoreApi.Shared;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Calcular.CoreApi.Controllers.Business
@@ -35,7 +36,6 @@ namespace Calcular.CoreApi.Controllers.Business
                                         || x.Processo.Advogado.Celular.Contains(filter)
                                         || (pendente && x.Status == StatusEnum.Pendente)
                                         || (entregue && x.Status == StatusEnum.Entregue))
-                            .ToList()
                             .Select(x => new Servico
                             {
                                 Id = x.Id,
@@ -61,19 +61,17 @@ namespace Calcular.CoreApi.Controllers.Business
                                         Email = x.Processo.Advogado.Email,
                                     }
                                 },
-                                Atividades = x.Atividades.Select(a => new Atividade
+                                Atividades = new List<Atividade> { x.Atividades.Select(a => new Atividade
                                 {
                                     Id = a.Id,
                                     Entrega = a.Entrega,
-                                    TipoAtividade = a.TipoAtividade,
-                                    Responsavel = a.Responsavel,
-                                    Tempo = a.Tempo,
+                                    TipoAtividade = new TipoAtividade { Nome = a.TipoAtividade.Nome },
+                                    Responsavel = new User { Name = a.Responsavel.Name },
                                     EtapaAtividade = a.EtapaAtividade,
                                     TipoImpressao = a.TipoImpressao,
                                     TipoExecucao = a.TipoExecucao,
-                                }).ToList(),
-                            })
-                            .ToList();
+                                }).FirstOrDefault() },
+                            });
 
             return Ok(result);
         }

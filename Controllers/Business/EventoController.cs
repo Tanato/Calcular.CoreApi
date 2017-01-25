@@ -65,7 +65,8 @@ namespace Calcular.CoreApi.Controllers.Business
             {
                 result.AddRange(
                    db.Servicos.Include(x => x.Atividades).Include(x => x.Processo)
-                   .Where(x => x.Prazo.HasValue && days.Any(d => d.Date == x.Prazo.Value.Date))
+                   .Where(x => x.Prazo.HasValue && days.Any(d => d.Date == x.Prazo.Value.Date)
+                             || (!x.Saida.HasValue && x.Atividades.All(k => k.TipoExecucao == TipoExecucaoEnum.Finalizado)))
                    .Select(x => new EventoViewModel
                    {
                        Id = x.Id,
