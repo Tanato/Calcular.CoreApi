@@ -45,7 +45,16 @@ namespace Calcular.CoreApi.Controllers.Business
             var result = db.Clientes.Where(x => string.IsNullOrEmpty(filter)
                                              || x.Nome.ContainsIgnoreNonSpacing(filter))
                                     .OrderBy(x => x.Nome)
-                                    .ToList();
+                                    .Select(x => new
+                                    {
+                                        Key = x.Id,
+                                        Value = x.Nome,
+                                        Id = x.Id,
+                                        Nome = x.Nome,
+                                        Perfil = x.Perfil,
+                                        Celular = x.Celular,
+                                        Email = x.Email,
+                                    }).ToList();
 
             return Ok(result);
         }
@@ -99,6 +108,7 @@ namespace Calcular.CoreApi.Controllers.Business
             item.ComoChegou = newItem.ComoChegou;
             item.ComoChegouDetalhe = newItem.ComoChegouDetalhe;
             item.Observacao = newItem.Observacao;
+            item.Vara = newItem.Vara;
 
             db.SaveChanges();
             return Ok(item);
@@ -109,7 +119,6 @@ namespace Calcular.CoreApi.Controllers.Business
         {
             var item = db.Clientes
                         .Include(x => x.Processos)
-                        .Include(x => x.Honorarios)
                         .Single(x => x.Id == id);
 
             if (item.Processos?.Count > 0)

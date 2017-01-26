@@ -38,7 +38,7 @@ namespace MovieAngularJSApp.Controllers
                 else
                     return Ok();
             }
-            ModelState.AddModelError("Error", "Invalid username or password.");
+            ModelState.AddModelError("Error", "Nome do usuário ou senha inválida.");
             return BadRequest(ModelState);
         }
 
@@ -48,8 +48,7 @@ namespace MovieAngularJSApp.Controllers
             if (ModelState.IsValid)
             {
                 var user = new User { Name = model.Name, UserName = model.UserName, Email = model.Email, BirthDate = model.BirthDate.Date.AddHours(12), Inativo = model.Inativo };
-                var result =
-                    await userManager.CreateAsync(user, "senha123");
+                var result = await userManager.CreateAsync(user, "senha123");
 
                 foreach (var role in model.Roles)
                     await userManager.AddToRoleAsync(user, db.Roles.Single(x => x.Id == role).Name);
@@ -62,7 +61,11 @@ namespace MovieAngularJSApp.Controllers
                 {
                     var error = result.Errors.FirstOrDefault();
                     ModelState.AddModelError(error.Code, error.Description);
-                    return BadRequest(result.Errors.FirstOrDefault().Description);
+
+                    if (error.Code == "InvalidUserName")
+                        return BadRequest("Nome de usuário inválido, deve conter apenas letras sem acento ou números.");
+
+                    return BadRequest(error.Description);
                 }
             }
 
@@ -141,7 +144,16 @@ namespace MovieAngularJSApp.Controllers
                 return Unauthorized();
             }
 
-            return Ok(new { Name = user.Name, BirthDate = user.BirthDate, Email = user.Email, Login = user.UserName });
+            var roles = await userManager.GetRolesAsync(user);
+
+            return Ok(new
+            {
+                Name = user.Name,
+                BirthDate = user.BirthDate,
+                Email = user.Email,
+                Login = user.UserName,
+                Roles = roles,
+            });
         }
     }
 }

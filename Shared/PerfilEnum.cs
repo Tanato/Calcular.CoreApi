@@ -16,5 +16,8 @@ namespace Calcular.CoreApi.Shared
 
         [Description("Diretor Secretaria")]
         DiretorSecretaria,
+
+        [Description("Outro")]
+        Outro,
     }
 }

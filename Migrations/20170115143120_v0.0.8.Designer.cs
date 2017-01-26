@@ -8,12 +8,13 @@ using Calcular.CoreApi.Models;
 namespace Calcular.CoreApi.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20170115143120_v0.0.8")]
+    partial class v008
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
             modelBuilder
-                .HasAnnotation("ProductVersion", "1.0.0-rtm-21431")
+                .HasAnnotation("ProductVersion", "1.0.1")
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
             modelBuilder.Entity("Calcular.CoreApi.Models.Business.Atividade", b =>
@@ -251,9 +252,9 @@ namespace Calcular.CoreApi.Migrations
 
                     b.Property<string>("Email");
 
-                    b.Property<bool?>("Fechado");
+                    b.Property<bool>("Fechado");
 
-                    b.Property<decimal?>("Honorario");
+                    b.Property<int>("Honorario");
 
                     b.Property<int>("Local");
 

@@ -8,12 +8,13 @@ using Calcular.CoreApi.Models;
 namespace Calcular.CoreApi.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20161206010720_v0.0.6")]
+    partial class v006
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
             modelBuilder
-                .HasAnnotation("ProductVersion", "1.0.0-rtm-21431")
+                .HasAnnotation("ProductVersion", "1.0.1")
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
             modelBuilder.Entity("Calcular.CoreApi.Models.Business.Atividade", b =>
@@ -89,8 +90,6 @@ namespace Calcular.CoreApi.Migrations
 
                     b.Property<string>("Telefone2");
 
-                    b.Property<string>("Vara");
-
                     b.HasKey("Id");
 
                     b.ToTable("Clientes");
@@ -122,30 +121,6 @@ namespace Calcular.CoreApi.Migrations
                     b.HasIndex("UsuarioId");
 
                     b.ToTable("Cobrancas");
-                });
-
-            modelBuilder.Entity("Calcular.CoreApi.Models.Business.Comissao", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<bool>("Ativo");
-
-                    b.Property<decimal>("HoraMaxima");
-
-                    b.Property<decimal>("HoraMinima");
-
-                    b.Property<int>("TipoAtividadeId");
-
-                    b.Property<decimal>("Valor");
-
-                    b.Property<DateTime>("Vigencia");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TipoAtividadeId");
-
-                    b.ToTable("Comissoes");
                 });
 
             modelBuilder.Entity("Calcular.CoreApi.Models.Business.Honorario", b =>
@@ -251,9 +226,9 @@ namespace Calcular.CoreApi.Migrations
 
                     b.Property<string>("Email");
 
-                    b.Property<bool?>("Fechado");
+                    b.Property<bool>("Fechado");
 
-                    b.Property<decimal?>("Honorario");
+                    b.Property<int>("Honorario");
 
                     b.Property<int>("Local");
 
@@ -534,14 +509,6 @@ namespace Calcular.CoreApi.Migrations
                     b.HasOne("Calcular.CoreApi.Models.User", "Usuario")
                         .WithMany()
                         .HasForeignKey("UsuarioId");
-                });
-
-            modelBuilder.Entity("Calcular.CoreApi.Models.Business.Comissao", b =>
-                {
-                    b.HasOne("Calcular.CoreApi.Models.Business.TipoAtividade", "TipoAtividade")
-                        .WithMany()
-                        .HasForeignKey("TipoAtividadeId")
-                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("Calcular.CoreApi.Models.Business.Honorario", b =>

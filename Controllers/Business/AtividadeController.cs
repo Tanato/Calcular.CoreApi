@@ -30,12 +30,13 @@ namespace Calcular.CoreApi.Controllers.Business
                             .Include(x => x.Responsavel)
                             .Include(x => x.Servico).ThenInclude(x => x.Processo).ThenInclude(x => x.Advogado)
                             .Include(x => x.TipoAtividade)
+                            .Include(x => x.AtividadeOrigem)
                             .Select(x => new Atividade
                             {
                                 Id = x.Id,
-                                Nome = x.Nome,
                                 Entrega = x.Entrega,
                                 Tempo = x.Tempo,
+                                TipoExecucao = x.TipoExecucao,
                                 ServicoId = x.ServicoId,
                                 Servico = new Servico
                                 {
@@ -71,41 +72,52 @@ namespace Calcular.CoreApi.Controllers.Business
             var isRevisor = await userManager.IsInRoleAsync(user, "Revisor");
 
             var result = db.Atividades
-                            .Include(x => x.Responsavel)
-                            .Include(x => x.Servico).ThenInclude(x => x.Processo).ThenInclude(x => x.Advogado)
-                            .Include(x => x.TipoAtividade)
-                            .Where(x => (x.ResponsavelId == user.Id || (isRevisor && x.EtapaAtividade == EtapaAtividadeEnum.Revisao)) // Filtra por usuário ou revisor
-                                        && (all || x.TipoExecucao == TipoExecucaoEnum.Pendente)) // Filtra atividades pendentes
-                            .Select(x => new Atividade
+                        .Include(x => x.Responsavel)
+                        .Include(x => x.Servico).ThenInclude(x => x.Processo).ThenInclude(x => x.Advogado)
+                        .Include(x => x.TipoAtividade)
+                        .Include(x => x.AtividadeOrigem).ThenInclude(x => x.Responsavel)
+                        .Where(x => x.Servico != null && x.Servico.Processo != null
+                                    && (x.ResponsavelId == user.Id || (isRevisor && x.EtapaAtividade == EtapaAtividadeEnum.Revisao)) // Filtra por usuário ou revisor
+                                    && (all || x.TipoExecucao == TipoExecucaoEnum.Pendente)) // Filtra atividades pendentes
+                        .ToList()
+                        .Select(x => new Atividade
+                        {
+                            Id = x.Id,
+                            Entrega = x.Entrega,
+                            Tempo = x.Tempo,
+                            TipoExecucao = x.TipoExecucao,
+                            ServicoId = x.ServicoId,
+                            Servico = new Servico
                             {
-                                Id = x.Id,
-                                Nome = x.Nome,
-                                Entrega = x.Entrega,
-                                Tempo = x.Tempo,
-                                ServicoId = x.ServicoId,
-                                Servico = new Servico
+                                Id = x.Servico.Id,
+                                Prazo = x.Servico.Prazo,
+                                Status = x.Servico.Status,
+                                Processo = new Processo
                                 {
-                                    Id = x.Servico.Id,
-                                    Prazo = x.Servico.Prazo,
-                                    Status = x.Servico.Status,
-                                    Processo = new Processo
-                                    {
-                                        Id = x.Servico.Processo.Id,
-                                        Numero = x.Servico.Processo.Numero,
-                                        Autor = x.Servico.Processo.Autor,
-                                        Reu = x.Servico.Processo.Reu,
-                                    }
-                                },
-                                EtapaAtividade = x.EtapaAtividade,
-                                AtividadeOrigemId = x.AtividadeOrigemId,
-                                TipoAtividadeId = x.TipoAtividadeId,
-                                TipoAtividade = new TipoAtividade
-                                {
-                                    Id = x.TipoAtividadeId,
-                                    Nome = x.TipoAtividade.Nome
+                                    Id = x.Servico.Processo.Id,
+                                    Numero = x.Servico.Processo.Numero,
+                                    Autor = x.Servico.Processo.Autor,
+                                    Reu = x.Servico.Processo.Reu,
                                 }
-                            })
-                            .ToList();
+                            },
+                            EtapaAtividade = x.EtapaAtividade,
+                            AtividadeOrigemId = x.AtividadeOrigemId,
+                            AtividadeOrigem = x.AtividadeOrigem == null ? null : new Atividade
+                            {
+                                Id = x.AtividadeOrigem.Id,
+                                Responsavel = new User
+                                {
+                                    Id = x.AtividadeOrigem?.Responsavel?.Id,
+                                    Name = x.AtividadeOrigem?.Responsavel?.Name,
+                                }
+                            },
+                            TipoAtividadeId = x.TipoAtividadeId,
+                            TipoAtividade = new TipoAtividade
+                            {
+                                Id = x.TipoAtividadeId,
+                                Nome = x.TipoAtividade.Nome
+                            }
+                        });
             return Ok(result);
         }
 
@@ -143,7 +155,6 @@ namespace Calcular.CoreApi.Controllers.Business
             if (item.EtapaAtividade == EtapaAtividadeEnum.Refazer || newItem.EtapaAtividade == EtapaAtividadeEnum.Refazer)
                 return BadRequest("Atividade para Refazer não pode ser alterada.");
 
-            item.Nome = newItem.Nome;
             item.Entrega = newItem.Entrega;
             item.Tempo = newItem.Tempo;
             item.TipoImpressao = newItem.TipoImpressao;
@@ -168,8 +179,8 @@ namespace Calcular.CoreApi.Controllers.Business
             return Ok(item);
         }
 
-        [HttpGet("responsavel")]
-        public IActionResult GetResponsavel()
+        [HttpGet("responsavel/{id}")]
+        public IActionResult GetResponsavel(int id)
         {
             var item = db.Users
                             .ToList()

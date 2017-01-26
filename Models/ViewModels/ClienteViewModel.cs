@@ -20,5 +20,6 @@ namespace Calcular.CoreApi.Models.ViewModels
         public ComoChegouEnum ComoChegou { get; set; }
         public string ComoChegouDetalhe { get; set; }
         public string Processos { get; set; }
+        public string Vara { get; set; }
     }
 }

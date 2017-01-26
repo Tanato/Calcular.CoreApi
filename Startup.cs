@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -47,12 +48,12 @@ namespace Calcular.CoreApi
             {
                 var sqlconn = @"Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=Calcular.CoreSql;Integrated Security=True";
                 services.AddEntityFrameworkSqlServer();
-                services.AddDbContext<ApplicationDbContext>(o => o.UseSqlServer(sqlconn));
+                services.AddDbContext<ApplicationDbContext>(o => o.UseSqlServer(sqlconn), ServiceLifetime.Transient);
             }
             else
             {
                 services.AddEntityFrameworkSqlServer();
-                services.AddDbContext<ApplicationDbContext>(o => o.UseSqlServer(GetConnectionString()));
+                services.AddDbContext<ApplicationDbContext>(o => o.UseSqlServer(GetConnectionString()), ServiceLifetime.Transient);
             }
 
             services.AddCors(options =>
@@ -82,20 +83,38 @@ namespace Calcular.CoreApi
             })
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 
+            services.AddResponseCaching(x => { x.MaximumBodySize = 1000000; });
+
             services.AddMvc(config =>
+            {
+                config.Filters.Add(new AuthorizeFilter(new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build()));
+
+                config.CacheProfiles.Add("Default",
+                new CacheProfile()
                 {
-                    config.Filters.Add(new AuthorizeFilter(new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build()));
-                })
-                .AddJsonOptions(options =>
-                {
-                    options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
+                    Duration = 60
                 });
+            })
+            .AddJsonOptions(options =>
+            {
+                options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
+                options.SerializerSettings.DateFormatString = "yyyy-MM-ddThh:mm:ss-03:00";
+            });
 
             services.AddSwaggerGen();
         }
-        
+
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
+            app.Use(async (context, next) =>
+            {
+                await next.Invoke();
+                if (new Random().Next(2) == 0)
+                    GC.Collect();
+            });
+
+            app.UseResponseCaching();
+
             app.Use(async (context, next) =>
             {
                 context.Response.Headers.Add("Content-encoding", "gzip");
