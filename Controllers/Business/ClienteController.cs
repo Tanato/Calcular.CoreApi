@@ -29,12 +29,34 @@ namespace Calcular.CoreApi.Controllers.Business
         [HttpGet]
         public IActionResult GetAll([FromQuery] string filter)
         {
-            var result = db.Clientes.Where(x => string.IsNullOrEmpty(filter)
+            var result = db.Clientes
+                            .Include(x => x.Processos)
+                            .Where(x => string.IsNullOrEmpty(filter)
                                              || (!string.IsNullOrEmpty(x.Nome) && x.Nome.ContainsIgnoreNonSpacing(filter))
                                              || (!string.IsNullOrEmpty(x.Email) && x.Email.Contains(filter))
                                              || (!string.IsNullOrEmpty(x.Empresa) && x.Empresa.ContainsIgnoreNonSpacing(filter))
                                              || (!string.IsNullOrEmpty(x.Celular) && x.Celular.Contains(filter)))
-                                    .OrderBy(x => x.Nome);
+                            .OrderBy(x => x.Nome)
+                            .Select(x => new ClienteViewModel
+                            {
+                                Id = x.Id,
+                                Nome = x.Nome,
+                                Email = x.Email,
+                                Endereco = x.Endereco,
+                                Telefone = x.Telefone,
+                                Telefone2 = x.Telefone2,
+                                Celular = x.Celular,
+                                Celular2 = x.Celular2,
+                                Nascimento = x.Nascimento,
+                                Perfil = x.Perfil,
+                                Empresa = x.Empresa,
+                                Honorarios = x.Honorarios,
+                                ComoChegou = x.ComoChegou,
+                                ComoChegouDetalhe = x.ComoChegouDetalhe,
+                                Observacao = x.Observacao,
+                                Vara = x.Vara,
+                                Processos = x.Processos.Count(),
+                            });
 
             return Ok(result.ToList());
         }
