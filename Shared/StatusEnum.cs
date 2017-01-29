@@ -8,6 +8,7 @@ namespace Calcular.CoreApi.Shared
     public enum StatusEnum
     {
         Pendente,
-        Entregue
+        Entregue,
+        Cancelado
     }
 }

@@ -179,14 +179,11 @@ namespace Calcular.CoreApi.Controllers.Business
             return Ok(item);
         }
 
-        [HttpGet("responsavel/{id}")]
-        public IActionResult GetResponsavel(int id)
+        [HttpGet("responsavel")]
+        public IActionResult GetResponsavel()
         {
-            var item = db.Users
-                            .ToList()
-                            .Where(x => (userManager.IsInRoleAsync(x, "Calculista").Result
-                                        || userManager.IsInRoleAsync(x, "Revisor").Result
-                                        || userManager.IsInRoleAsync(x, "Gerencial").Result)
+            var item = db.Users.ToList()
+                            .Where(x => (userManager.IsInRoleAsync(x, "Calculista").Result)
                                      && !x.Inativo)
                             .Select(x => new KeyValuePair<string, string>(x.Id, x.Name));
             return Ok(item);
@@ -200,10 +197,20 @@ namespace Calcular.CoreApi.Controllers.Business
 
         [Route("tipoimpressao")]
         [HttpGet]
-        public IActionResult GetParte()
+        public IActionResult GetTipoImpressao()
         {
             var result = Enum.GetValues(typeof(TipoImpressaoEnum))
                             .Cast<TipoImpressaoEnum>()
+                            .Select(x => new KeyValuePair<int, string>((int)x, EnumHelpers.GetEnumDescription(x)));
+            return Ok(result);
+        }
+
+        [Route("tipoexecucao")]
+        [HttpGet]
+        public IActionResult GetTipoExecucao()
+        {
+            var result = Enum.GetValues(typeof(TipoExecucaoEnum))
+                            .Cast<TipoExecucaoEnum>()
                             .Select(x => new KeyValuePair<int, string>((int)x, EnumHelpers.GetEnumDescription(x)));
             return Ok(result);
         }

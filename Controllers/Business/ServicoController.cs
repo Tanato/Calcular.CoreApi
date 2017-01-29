@@ -20,25 +20,37 @@ namespace Calcular.CoreApi.Controllers.Business
         }
 
         [HttpGet]
-        public IActionResult GetAll([FromQuery] string filter)
+        public IActionResult GetAll([FromQuery] string filter, [FromQuery] bool exibeEntregue = false)
         {
             var pendente = filter.ContainsIgnoreNonSpacing("pendente");
             var entregue = filter.ContainsIgnoreNonSpacing("entregue");
+            var calcelado = filter.ContainsIgnoreNonSpacing("calcelado");
 
             var result = db.Servicos
+                           .Include(x => x.TipoServico)
                            .Include(x => x.Processo).ThenInclude(x => x.Advogado)
                            .Where(x => string.IsNullOrEmpty(filter)
+                                       || (exibeEntregue && x.Status == StatusEnum.Entregue)
                                        || x.Processo.Numero.Contains(filter)
                                        || x.Processo.Advogado.Nome.Contains(filter)
                                        || x.Processo.Advogado.Telefone.Contains(filter)
                                        || x.Processo.Advogado.Celular.Contains(filter)
                                        || (pendente && x.Status == StatusEnum.Pendente)
-                                       || (entregue && x.Status == StatusEnum.Entregue))
+                                       || (entregue && x.Status == StatusEnum.Entregue)
+                                       || (calcelado && x.Status == StatusEnum.Cancelado))
+                            .OrderBy(x => x.Prazo)
                            .ToList()
                            .Select(x => new Servico
                            {
                                Id = x.Id,
                                Entrada = x.Entrada,
+                               TipoServicoId = x.TipoServicoId,
+                               TipoImpressao = x.TipoImpressao,
+                               TipoServico = new TipoServico
+                               {
+                                   Id = x.TipoServico.Id,
+                                   Nome = x.TipoServico.Nome,
+                               },
                                Prazo = x.Prazo,
                                Saida = x.Saida,
                                Status = x.Status,
@@ -54,37 +66,10 @@ namespace Calcular.CoreApi.Controllers.Business
                                        Id = x.Processo.Advogado.Id,
                                        Nome = x.Processo.Advogado.Nome
                                    }
-                               },
-                               Atividades = new List<Atividade>
-                               {
-                                   FirstAtividade(x.Id)
-                               },
+                               }
                            });
 
             return Ok(result);
-        }
-
-        private Atividade FirstAtividade(int id)
-        {
-            var a = db.Atividades
-                .Include(x => x.TipoAtividade)
-                .Include(x => x.Responsavel)
-                .Where(x => x.ServicoId == id).FirstOrDefault();
-            if (a != null)
-            {
-                return new Atividade
-                {
-                    Id = a.Id,
-                    Entrega = a.Entrega,
-                    TipoAtividade = new TipoAtividade { Nome = a.TipoAtividade.Nome },
-                    Responsavel = new User { Name = a.Responsavel.Name },
-                    EtapaAtividade = a.EtapaAtividade,
-                    TipoImpressao = a.TipoImpressao,
-                    TipoExecucao = a.TipoExecucao,
-                };
-            }
-            else
-                return new Atividade();
         }
 
         [HttpGet]
@@ -92,6 +77,7 @@ namespace Calcular.CoreApi.Controllers.Business
         public IActionResult GetByNumber([FromQuery] string filter)
         {
             var result = db.Servicos
+                            .Include(x => x.TipoServico)
                             .Include(x => x.Processo).ThenInclude(x => x.Advogado)
                             .Include(x => x.Atividades).ThenInclude(x => x.Responsavel)
                             .Include(x => x.Atividades).ThenInclude(x => x.TipoAtividade)
@@ -101,6 +87,13 @@ namespace Calcular.CoreApi.Controllers.Business
                             {
                                 Id = x.Id,
                                 Entrada = x.Entrada,
+                                TipoServicoId = x.TipoServicoId,
+                                TipoImpressao = x.TipoImpressao,
+                                TipoServico = new TipoServico
+                                {
+                                    Id = x.TipoServico.Id,
+                                    Nome = x.TipoServico.Nome,
+                                },
                                 Prazo = x.Prazo,
                                 Saida = x.Saida,
                                 Status = x.Status,
@@ -126,7 +119,11 @@ namespace Calcular.CoreApi.Controllers.Business
                                 {
                                     Id = a.Id,
                                     Entrega = a.Entrega,
-                                    TipoAtividade = a.TipoAtividade,
+                                    TipoAtividade = new TipoAtividade
+                                    {
+                                        Id = a.TipoAtividade.Id,
+                                        Nome = a.TipoAtividade.Nome
+                                    },
                                     Responsavel = a.Responsavel,
                                     Tempo = a.Tempo,
                                     EtapaAtividade = a.EtapaAtividade,
@@ -143,6 +140,7 @@ namespace Calcular.CoreApi.Controllers.Business
         public IActionResult GetById(int id)
         {
             var result = db.Servicos
+                            .Include(x => x.TipoServico)
                             .Include(x => x.Processo).ThenInclude(x => x.Advogado)
                             .Include(x => x.Atividades).ThenInclude(x => x.Responsavel)
                             .Include(x => x.Atividades).ThenInclude(x => x.TipoAtividade)
@@ -167,6 +165,7 @@ namespace Calcular.CoreApi.Controllers.Business
             }
 
             var result = db.Servicos
+                            .Include(x => x.TipoServico)
                             .Include(x => x.Processo).ThenInclude(x => x.Advogado)
                             .Include(x => x.Atividades).ThenInclude(x => x.Responsavel)
                             .Include(x => x.Atividades).ThenInclude(x => x.TipoAtividade)
@@ -177,14 +176,19 @@ namespace Calcular.CoreApi.Controllers.Business
         [HttpPut]
         public IActionResult Put([FromBody] Servico model)
         {
-            var item = db.Servicos.Single(x => x.Id == model.Id);
+            var item = db.Servicos
+                .Include(x => x.Atividades)
+                .Single(x => x.Id == model.Id);
 
             item.Volumes = model.Volumes;
             item.Entrada = model.Entrada;
             item.Prazo = model.Prazo;
 
-            if (model.Saida != null)
+            if (item.Atividades.Count > 0 && model.Saida != null)
             {
+                if (item.Atividades.Any(x => x.TipoExecucao != TipoExecucaoEnum.Finalizado))
+                    return BadRequest("Existem atividades não finalizadas, impossível inserir data de saída.");
+
                 item.Saida = model.Saida;
                 item.Status = StatusEnum.Entregue;
             }
@@ -192,11 +196,51 @@ namespace Calcular.CoreApi.Controllers.Business
             db.SaveChanges();
 
             var result = db.Servicos
+                           .Include(x => x.TipoServico)
                            .Include(x => x.Processo).ThenInclude(x => x.Advogado)
                            .Include(x => x.Atividades).ThenInclude(x => x.Responsavel)
                            .Include(x => x.Atividades).ThenInclude(x => x.TipoAtividade)
                            .Single(x => x.Id == model.Id);
             return Ok(result);
+        }
+
+        [HttpPost("cancel/{id}")]
+        public IActionResult Cancel(int id)
+        {
+            var servico = db.Servicos
+                        .Include(x => x.Atividades)
+                        .Single(x => x.Id == id);
+
+            servico.Status = StatusEnum.Cancelado;
+
+            foreach (var item in servico.Atividades)
+            {
+                switch (item.TipoExecucao)
+                {
+                    case TipoExecucaoEnum.Pendente:
+                        item.TipoExecucao = TipoExecucaoEnum.Cancelado;
+                        break;
+                    case TipoExecucaoEnum.Finalizado:
+                        break;
+                    case TipoExecucaoEnum.Revisar:
+                        item.TipoExecucao = TipoExecucaoEnum.RevisarCancelado;
+                        break;
+                    case TipoExecucaoEnum.Refazer:
+                        item.TipoExecucao = TipoExecucaoEnum.RefazerCancelado;
+                        break;
+                    case TipoExecucaoEnum.Cancelado:
+                        break;
+                    case TipoExecucaoEnum.RevisarCancelado:
+                        break;
+                    case TipoExecucaoEnum.RefazerCancelado:
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            db.SaveChanges();
+            return Ok(servico);
         }
 
         [HttpDelete("{id}")]
@@ -206,6 +250,16 @@ namespace Calcular.CoreApi.Controllers.Business
             db.Servicos.Remove(item);
             db.SaveChanges();
             return Ok(item);
+        }
+
+        [Route("status")]
+        [HttpGet]
+        public IActionResult GetStatus()
+        {
+            var result = Enum.GetValues(typeof(StatusEnum))
+                            .Cast<StatusEnum>()
+                            .Select(x => new KeyValuePair<int, string>((int)x, EnumHelpers.GetEnumDescription(x)));
+            return Ok(result);
         }
     }
 }
