@@ -20,7 +20,7 @@ namespace Calcular.CoreApi.Controllers.Business
         }
 
         [HttpGet]
-        public IActionResult GetAll([FromQuery] string filter, [FromQuery] bool exibeEntregue = false)
+        public IActionResult GetAll([FromQuery] string filter, [FromQuery] bool all = false)
         {
             var pendente = filter.ContainsIgnoreNonSpacing("pendente");
             var entregue = filter.ContainsIgnoreNonSpacing("entregue");
@@ -29,8 +29,7 @@ namespace Calcular.CoreApi.Controllers.Business
             var result = db.Servicos
                            .Include(x => x.TipoServico)
                            .Include(x => x.Processo).ThenInclude(x => x.Advogado)
-                           .Where(x => string.IsNullOrEmpty(filter)
-                                       || (exibeEntregue && x.Status == StatusEnum.Entregue)
+                           .Where(x => (string.IsNullOrEmpty(filter)
                                        || x.Processo.Numero.Contains(filter)
                                        || x.Processo.Advogado.Nome.Contains(filter)
                                        || x.Processo.Advogado.Telefone.Contains(filter)
@@ -38,6 +37,7 @@ namespace Calcular.CoreApi.Controllers.Business
                                        || (pendente && x.Status == StatusEnum.Pendente)
                                        || (entregue && x.Status == StatusEnum.Entregue)
                                        || (calcelado && x.Status == StatusEnum.Cancelado))
+                                       && all || x.Status == StatusEnum.Pendente)
                             .OrderBy(x => x.Prazo)
                            .ToList()
                            .Select(x => new Servico

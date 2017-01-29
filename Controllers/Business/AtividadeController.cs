@@ -1,5 +1,6 @@
 ﻿using Calcular.CoreApi.Models;
 using Calcular.CoreApi.Models.Business;
+using Calcular.CoreApi.Models.ViewModels;
 using Calcular.CoreApi.Shared;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -122,9 +123,13 @@ namespace Calcular.CoreApi.Controllers.Business
         }
 
         [HttpGet("{id}")]
-        public IActionResult GetById(int id)
+        public async Task<IActionResult> GetByIdAsync(int id)
         {
-            var result = db.Atividades
+            var user = userManager.GetUserAsync(HttpContext.User).Result;
+            var isRevisor = await userManager.IsInRoleAsync(user, "Revisor");
+            var idAdmOrGer = await userManager.IsInRoleAsync(user, "Administrativo") || await userManager.IsInRoleAsync(user, "Gerencial");
+
+            var r = db.Atividades
                             .Include(x => x.Responsavel)
                             .Include(x => x.Servico).ThenInclude(x => x.Processo).ThenInclude(x => x.Advogado)
                             .Include(x => x.TipoAtividade)
@@ -132,7 +137,42 @@ namespace Calcular.CoreApi.Controllers.Business
                             .Include(x => x.AtividadeOrigem).ThenInclude(x => x.TipoAtividade)
                             .SingleOrDefault(x => x.Id == id);
 
+            var result = new AtividadeViewModel
+            {
+                Id = r.Id,
+                AtividadeOrigem = r.AtividadeOrigem,
+                AtividadeOrigemId = r.AtividadeOrigemId,
+                Entrega = r.Entrega,
+                EtapaAtividade = r.EtapaAtividade,
+                Observacao = r.Observacao,
+                ObservacaoRevisor = isRevisor ? r.ObservacaoRevisor : string.Empty,
+                ObservacaoComissao = idAdmOrGer ? r.ObservacaoComissao : string.Empty,
+                Responsavel = r.Responsavel,
+                ResponsavelId = r.ResponsavelId,
+                Servico = r.Servico,
+                ServicoId = r.ServicoId,
+                Tempo = GetHourFromTimespan(r.Tempo),
+                TipoAtividade = r.TipoAtividade,
+                TipoAtividadeId = r.TipoAtividadeId,
+                TipoExecucao = r.TipoExecucao,
+                TipoImpressao = r.TipoImpressao,
+            };
+
             return Ok(result);
+        }
+
+        private static string GetHourFromTimespan(TimeSpan? tempo)
+        {
+            if (tempo.HasValue)
+            {
+                var dias = !string.IsNullOrEmpty(tempo.Value.ToString(@"dd")) ? Convert.ToInt16(tempo.Value.ToString(@"dd")) : 0;
+                var horas = !string.IsNullOrEmpty(tempo.Value.ToString(@"hh")) ? Convert.ToInt16(tempo.Value.ToString(@"hh")) : 0;
+                var minutos = tempo.Value.ToString(@"mm");
+
+                return $"{dias * 24 + horas}:{minutos}";
+            }
+            else
+                return string.Empty;
         }
 
         [HttpPost]
