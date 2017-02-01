@@ -186,7 +186,7 @@ namespace Calcular.CoreApi.Controllers.Business
 
             if (item.Atividades.Count > 0 && model.Saida != null)
             {
-                if (item.Atividades.Any(x => x.TipoExecucao != TipoExecucaoEnum.Finalizado))
+                if (item.Atividades.Any(x => x.TipoExecucao != TipoExecucaoEnum.Finalizado && x.TipoExecucao != TipoExecucaoEnum.Revisar && x.TipoExecucao != TipoExecucaoEnum.Refazer))
                     return BadRequest("Existem atividades não finalizadas, impossível inserir data de saída.");
 
                 item.Saida = model.Saida;
