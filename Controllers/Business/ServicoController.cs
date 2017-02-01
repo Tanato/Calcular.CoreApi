@@ -24,7 +24,7 @@ namespace Calcular.CoreApi.Controllers.Business
         {
             var pendente = filter.ContainsIgnoreNonSpacing("pendente");
             var entregue = filter.ContainsIgnoreNonSpacing("entregue");
-            var calcelado = filter.ContainsIgnoreNonSpacing("calcelado");
+            var calcelado = filter.ContainsIgnoreNonSpacing("cancelado");
 
             var result = db.Servicos
                            .Include(x => x.TipoServico)
@@ -37,7 +37,7 @@ namespace Calcular.CoreApi.Controllers.Business
                                        || (pendente && x.Status == StatusEnum.Pendente)
                                        || (entregue && x.Status == StatusEnum.Entregue)
                                        || (calcelado && x.Status == StatusEnum.Cancelado))
-                                       && all || x.Status == StatusEnum.Pendente)
+                                       && (all || x.Status == StatusEnum.Pendente))
                             .OrderBy(x => x.Prazo)
                            .ToList()
                            .Select(x => new Servico

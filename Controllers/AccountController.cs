@@ -83,7 +83,7 @@ namespace MovieAngularJSApp.Controllers
                 await userManager.RemoveFromRolesAsync(user, userRoles);
                 foreach (var role in model.Roles)
                     await userManager.AddToRoleAsync(user, db.Roles.Single(x => x.Id == role).Name);
-
+                
                 user.Email = model.Email;
                 user.BirthDate = model.BirthDate.Date.AddHours(12);
                 user.Name = model.Name;
