@@ -129,6 +129,7 @@ namespace Calcular.CoreApi.Controllers.Business
                                     EtapaAtividade = a.EtapaAtividade,
                                     TipoImpressao = a.TipoImpressao,
                                     TipoExecucao = a.TipoExecucao,
+                                    Valor = a.Valor,
                                 }).ToList(),
                             })
                             .ToList();

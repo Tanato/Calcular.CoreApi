@@ -31,6 +31,8 @@ namespace Calcular.CoreApi.Controllers.Business
             {
                 var user = userManager.GetUserAsync(HttpContext.User).Result;
                 var isRevisor = await userManager.IsInRoleAsync(user, "Revisor");
+                var isExterno = await userManager.IsInRoleAsync(user, "Colaborador Externo");
+                var isCalculista = await userManager.IsInRoleAsync(user, "Calculista");
 
                 var atividade = db.Atividades.Include(x => x.TipoAtividade).Single(x => x.Id == model.Id);
 
@@ -49,11 +51,14 @@ namespace Calcular.CoreApi.Controllers.Business
                 if (!string.IsNullOrEmpty(model.Tempo) && model.Tempo.Split(':').Length != 2)
                     return BadRequest("Tempo de execução inválido");
 
-                atividade.Tempo = string.IsNullOrEmpty(model.Tempo)
-                                ? (TimeSpan?)null
-                                : new TimeSpan(int.Parse(model.Tempo.Split(':')[0]),    // hours
-                                          int.Parse(model.Tempo.Split(':')[1]),    // minutes
-                                          0);                               // seconds
+                if (isCalculista)
+                {
+                    atividade.Tempo = string.IsNullOrEmpty(model.Tempo)
+                                    ? (TimeSpan?)null
+                                    : new TimeSpan(int.Parse(model.Tempo.Split(':')[0]),    // hours
+                                              int.Parse(model.Tempo.Split(':')[1]),    // minutes
+                                              0);                               // seconds
+                }
 
                 if (atividade.TipoExecucao != TipoExecucaoEnum.Finalizado)
                     atividade.Observacao = model.Observacao;

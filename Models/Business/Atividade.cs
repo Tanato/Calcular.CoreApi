@@ -44,5 +44,7 @@ namespace Calcular.CoreApi.Models.Business
         public Atividade AtividadeOrigem { get; set; }
 
         public EtapaAtividadeEnum EtapaAtividade { get; set; }
+
+        public decimal? Valor { get; set; }
     }
 }

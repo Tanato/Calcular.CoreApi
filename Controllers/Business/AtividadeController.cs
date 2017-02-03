@@ -176,31 +176,49 @@ namespace Calcular.CoreApi.Controllers.Business
         }
 
         [HttpPost]
-        public IActionResult Post([FromBody] Atividade atividade)
+        public IActionResult Post([FromBody] Atividade model)
         {
+            var atividade = new Atividade
+            {
+                TipoAtividadeId = model.TipoAtividadeId,
+                ResponsavelId = model.ResponsavelId,
+                AtividadeOrigemId = model.AtividadeOrigemId,
+                EtapaAtividade = model.EtapaAtividade,
+                Observacao = model.Observacao,
+                ObservacaoComissao = model.ObservacaoComissao,
+                ObservacaoRevisor = model.ObservacaoRevisor,
+                Entrega = model.Entrega,
+                ServicoId = model.ServicoId,
+                Tempo = model.Tempo,
+                TipoImpressao = model.TipoImpressao,
+                Valor = model.Valor,
+                TipoExecucao = model.TipoExecucao,
+            };
+
             db.Atividades.Add(atividade);
             db.SaveChanges();
 
-            return Ok(atividade);
+            return Ok(model);
         }
 
         [HttpPut]
-        public IActionResult Put([FromBody] Atividade newItem)
+        public IActionResult Put([FromBody] Atividade model)
         {
-            var item = db.Atividades.Single(x => x.Id == newItem.Id);
+            var item = db.Atividades.Single(x => x.Id == model.Id);
 
-            if (item.EtapaAtividade == EtapaAtividadeEnum.Revisao || newItem.EtapaAtividade == EtapaAtividadeEnum.Revisao)
+            if (item.EtapaAtividade == EtapaAtividadeEnum.Revisao || model.EtapaAtividade == EtapaAtividadeEnum.Revisao)
                 return BadRequest("Atividade de Revisão não pode ser alterada.");
 
-            if (item.EtapaAtividade == EtapaAtividadeEnum.Refazer || newItem.EtapaAtividade == EtapaAtividadeEnum.Refazer)
+            if (item.EtapaAtividade == EtapaAtividadeEnum.Refazer || model.EtapaAtividade == EtapaAtividadeEnum.Refazer)
                 return BadRequest("Atividade para Refazer não pode ser alterada.");
 
-            item.Entrega = newItem.Entrega;
-            item.Tempo = newItem.Tempo;
-            item.TipoImpressao = newItem.TipoImpressao;
-            item.Observacao = newItem.Observacao;
-            item.TipoAtividadeId = newItem.TipoAtividadeId;
-            item.ResponsavelId = newItem.ResponsavelId;
+            item.Entrega = model.Entrega;
+            item.Tempo = model.Tempo;
+            item.TipoImpressao = model.TipoImpressao;
+            item.Observacao = model.Observacao;
+            item.TipoAtividadeId = model.TipoAtividadeId;
+            item.ResponsavelId = model.ResponsavelId;
+            item.Valor = model.Valor;
 
             db.SaveChanges();
             return Ok(item);
@@ -223,9 +241,10 @@ namespace Calcular.CoreApi.Controllers.Business
         public IActionResult GetResponsavel()
         {
             var item = db.Users.ToList()
-                            .Where(x => (userManager.IsInRoleAsync(x, "Calculista").Result)
+                            .Where(x => (userManager.IsInRoleAsync(x, "Calculista").Result
+                                        || userManager.IsInRoleAsync(x, "Colaborador Externo").Result)
                                      && !x.Inativo)
-                            .Select(x => new KeyValuePair<string, string>(x.Id, x.Name));
+                            .Select(x => new { Id = x.Id, Nome = x.Name, Login = x.Logins, IsExterno = userManager.IsInRoleAsync(x, "Colaborador Externo").Result });
             return Ok(item);
         }
 
