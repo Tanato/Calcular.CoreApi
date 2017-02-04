@@ -27,49 +27,22 @@ namespace Calcular.CoreApi.Controllers.Business
         [HttpGet("processo")]
         public IActionResult GetAll([FromQuery] string filter, [FromQuery] bool all)
         {
+            bool isDate = DateTime.TryParse(filter, out DateTime filterDate);
+
             var result = db.Processos
-                            .Include(x => x.Advogado)
-                            .Include(x => x.Honorarios)
-                            .Include(x => x.Cobrancas).ThenInclude(x => x.Usuario)
-                            .Where(x => x.Honorarios.Any()
-                                        && string.IsNullOrEmpty(filter)
-                                             || x.Numero.Contains(filter)
-                                             || x.Reu.Contains(filter)
-                                             || x.Autor.Contains(filter)
-                                             || x.Advogado.Nome.Contains(filter)
-                                             || x.Advogado.Empresa.Contains(filter))
-                                             .OrderBy(x => x.Id)
-                            .ToList()
-                            .Where(x => all || x.Total > 0)
-                            //.Select(x =>
-                            //{
-                            //    var ultimaCobranca = x.Cobrancas.OrderByDescending(c => c.DataCobranca).FirstOrDefault();
-                            //    return new
-                            //    {
-                            //        Advogado = new Cliente { Id = x.Advogado.Id, Nome = x.Advogado.Nome },
-                            //        Numero = x.Numero,
-                            //        Id = x.Id,
-                            //        Autor = x.Autor,
-                            //        Reu = x.Reu,
-                            //        Honorario = x.Honorario,
-                            //        Prazo = x.Prazo,
-                            //        Total = x.Total,
-                            //        DataUltimaCobranca = ultimaCobranca != null ? (DateTime?)ultimaCobranca.DataCobranca : null,
-                            //        PrevisaoPagamento = ultimaCobranca != null ? (DateTime?)ultimaCobranca.PrevisaoPagamento : null,
-                            //        ValorPendente = x.Total,
-                            //        Cobrancas = x.Cobrancas.Select(c => new Cobranca
-                            //        {
-                            //            Contato = c.Contato,
-                            //            Id = c.Id,
-                            //            PrevisaoPagamento = c.PrevisaoPagamento,
-                            //            DataCobranca = c.DataCobranca,
-                            //            ValorPendente = c.ValorPendente,
-                            //        })
-                            //        .ToList()
-                            //    };
-                            //})
-                            //.OrderByDescending(x => x.DataUltimaCobranca)
-                            .ToList();
+                        .Include(x => x.Advogado)
+                        .Include(x => x.Honorarios)
+                        .Include(x => x.Cobrancas).ThenInclude(x => x.Usuario)
+                        .Where(x => x.Honorarios.Any()
+                                    && (isDate
+                                    || (string.IsNullOrEmpty(filter)
+                                        || x.Numero.Contains(filter)
+                                        || x.Advogado.Nome.Contains(filter)
+                                        || x.Advogado.Empresa.Contains(filter))))
+                        .OrderBy(x => x.Id)
+                        .ToList()
+                        .Where(x => (all || x.Total > 0)
+                                    && (!isDate || (x.DataCobranca.HasValue && x.DataCobranca.Value.Date == filterDate.Date)));
 
             return Ok(result);
         }

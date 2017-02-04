@@ -1,5 +1,6 @@
 ﻿using Calcular.CoreApi.Models;
 using Calcular.CoreApi.Models.Business;
+using Calcular.CoreApi.Models.ViewModels;
 using Calcular.CoreApi.Shared;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -122,9 +123,13 @@ namespace Calcular.CoreApi.Controllers.Business
         }
 
         [HttpGet("{id}")]
-        public IActionResult GetById(int id)
+        public async Task<IActionResult> GetByIdAsync(int id)
         {
-            var result = db.Atividades
+            var user = userManager.GetUserAsync(HttpContext.User).Result;
+            var isRevisor = await userManager.IsInRoleAsync(user, "Revisor");
+            var idAdmOrGer = await userManager.IsInRoleAsync(user, "Administrativo") || await userManager.IsInRoleAsync(user, "Gerencial");
+
+            var r = db.Atividades
                             .Include(x => x.Responsavel)
                             .Include(x => x.Servico).ThenInclude(x => x.Processo).ThenInclude(x => x.Advogado)
                             .Include(x => x.TipoAtividade)
@@ -132,35 +137,88 @@ namespace Calcular.CoreApi.Controllers.Business
                             .Include(x => x.AtividadeOrigem).ThenInclude(x => x.TipoAtividade)
                             .SingleOrDefault(x => x.Id == id);
 
+            var result = new AtividadeViewModel
+            {
+                Id = r.Id,
+                AtividadeOrigem = r.AtividadeOrigem,
+                AtividadeOrigemId = r.AtividadeOrigemId,
+                Entrega = r.Entrega,
+                EtapaAtividade = r.EtapaAtividade,
+                Observacao = r.Observacao,
+                ObservacaoRevisor = isRevisor ? r.ObservacaoRevisor : string.Empty,
+                ObservacaoComissao = idAdmOrGer ? r.ObservacaoComissao : string.Empty,
+                Responsavel = r.Responsavel,
+                ResponsavelId = r.ResponsavelId,
+                Servico = r.Servico,
+                ServicoId = r.ServicoId,
+                Tempo = GetHourFromTimespan(r.Tempo),
+                TipoAtividade = r.TipoAtividade,
+                TipoAtividadeId = r.TipoAtividadeId,
+                TipoExecucao = r.TipoExecucao,
+                TipoImpressao = r.TipoImpressao,
+            };
+
             return Ok(result);
         }
 
-        [HttpPost]
-        public IActionResult Post([FromBody] Atividade atividade)
+        private static string GetHourFromTimespan(TimeSpan? tempo)
         {
+            if (tempo.HasValue)
+            {
+                var dias = !string.IsNullOrEmpty(tempo.Value.ToString(@"dd")) ? Convert.ToInt16(tempo.Value.ToString(@"dd")) : 0;
+                var horas = !string.IsNullOrEmpty(tempo.Value.ToString(@"hh")) ? Convert.ToInt16(tempo.Value.ToString(@"hh")) : 0;
+                var minutos = tempo.Value.ToString(@"mm");
+
+                return $"{dias * 24 + horas}:{minutos}";
+            }
+            else
+                return string.Empty;
+        }
+
+        [HttpPost]
+        public IActionResult Post([FromBody] Atividade model)
+        {
+            var atividade = new Atividade
+            {
+                TipoAtividadeId = model.TipoAtividadeId,
+                ResponsavelId = model.ResponsavelId,
+                AtividadeOrigemId = model.AtividadeOrigemId,
+                EtapaAtividade = model.EtapaAtividade,
+                Observacao = model.Observacao,
+                ObservacaoComissao = model.ObservacaoComissao,
+                ObservacaoRevisor = model.ObservacaoRevisor,
+                Entrega = model.Entrega,
+                ServicoId = model.ServicoId,
+                Tempo = model.Tempo,
+                TipoImpressao = model.TipoImpressao,
+                Valor = model.Valor,
+                TipoExecucao = model.TipoExecucao,
+            };
+
             db.Atividades.Add(atividade);
             db.SaveChanges();
 
-            return Ok(atividade);
+            return Ok(model);
         }
 
         [HttpPut]
-        public IActionResult Put([FromBody] Atividade newItem)
+        public IActionResult Put([FromBody] Atividade model)
         {
-            var item = db.Atividades.Single(x => x.Id == newItem.Id);
+            var item = db.Atividades.Single(x => x.Id == model.Id);
 
-            if (item.EtapaAtividade == EtapaAtividadeEnum.Revisao || newItem.EtapaAtividade == EtapaAtividadeEnum.Revisao)
+            if (item.EtapaAtividade == EtapaAtividadeEnum.Revisao || model.EtapaAtividade == EtapaAtividadeEnum.Revisao)
                 return BadRequest("Atividade de Revisão não pode ser alterada.");
 
-            if (item.EtapaAtividade == EtapaAtividadeEnum.Refazer || newItem.EtapaAtividade == EtapaAtividadeEnum.Refazer)
+            if (item.EtapaAtividade == EtapaAtividadeEnum.Refazer || model.EtapaAtividade == EtapaAtividadeEnum.Refazer)
                 return BadRequest("Atividade para Refazer não pode ser alterada.");
 
-            item.Entrega = newItem.Entrega;
-            item.Tempo = newItem.Tempo;
-            item.TipoImpressao = newItem.TipoImpressao;
-            item.Observacao = newItem.Observacao;
-            item.TipoAtividadeId = newItem.TipoAtividadeId;
-            item.ResponsavelId = newItem.ResponsavelId;
+            item.Entrega = model.Entrega;
+            item.Tempo = model.Tempo;
+            item.TipoImpressao = model.TipoImpressao;
+            item.Observacao = model.Observacao;
+            item.TipoAtividadeId = model.TipoAtividadeId;
+            item.ResponsavelId = model.ResponsavelId;
+            item.Valor = model.Valor;
 
             db.SaveChanges();
             return Ok(item);
@@ -179,16 +237,14 @@ namespace Calcular.CoreApi.Controllers.Business
             return Ok(item);
         }
 
-        [HttpGet("responsavel/{id}")]
-        public IActionResult GetResponsavel(int id)
+        [HttpGet("responsavel")]
+        public IActionResult GetResponsavel()
         {
-            var item = db.Users
-                            .ToList()
+            var item = db.Users.ToList()
                             .Where(x => (userManager.IsInRoleAsync(x, "Calculista").Result
-                                        || userManager.IsInRoleAsync(x, "Revisor").Result
-                                        || userManager.IsInRoleAsync(x, "Gerencial").Result)
+                                        || userManager.IsInRoleAsync(x, "Colaborador Externo").Result)
                                      && !x.Inativo)
-                            .Select(x => new KeyValuePair<string, string>(x.Id, x.Name));
+                            .Select(x => new { Id = x.Id, Nome = x.Name, Login = x.Logins, IsExterno = userManager.IsInRoleAsync(x, "Colaborador Externo").Result });
             return Ok(item);
         }
 
@@ -200,10 +256,20 @@ namespace Calcular.CoreApi.Controllers.Business
 
         [Route("tipoimpressao")]
         [HttpGet]
-        public IActionResult GetParte()
+        public IActionResult GetTipoImpressao()
         {
             var result = Enum.GetValues(typeof(TipoImpressaoEnum))
                             .Cast<TipoImpressaoEnum>()
+                            .Select(x => new KeyValuePair<int, string>((int)x, EnumHelpers.GetEnumDescription(x)));
+            return Ok(result);
+        }
+
+        [Route("tipoexecucao")]
+        [HttpGet]
+        public IActionResult GetTipoExecucao()
+        {
+            var result = Enum.GetValues(typeof(TipoExecucaoEnum))
+                            .Cast<TipoExecucaoEnum>()
                             .Select(x => new KeyValuePair<int, string>((int)x, EnumHelpers.GetEnumDescription(x)));
             return Ok(result);
         }

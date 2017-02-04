@@ -1,5 +1,6 @@
 ﻿using Calcular.CoreApi.Models;
 using Calcular.CoreApi.Models.Business;
+using Calcular.CoreApi.Models.ViewModels;
 using Calcular.CoreApi.Shared;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -24,81 +25,136 @@ namespace Calcular.CoreApi.Controllers.Business
         }
 
         [HttpPost]
-        public async Task<IActionResult> ExecuteAtividade([FromBody] Atividade atividade)
+        public async Task<IActionResult> ExecuteAtividade([FromBody] AtividadeViewModel model)
         {
-            var user = userManager.GetUserAsync(HttpContext.User).Result;
-            var isRevisor = await userManager.IsInRoleAsync(user, "Revisor");
-
-            var item = db.Atividades.Include(x => x.TipoAtividade).Single(x => x.Id == atividade.Id);
-
-            if (item.TipoExecucao != TipoExecucaoEnum.Pendente)
-                return BadRequest("Só é possível executar atividades no estado Pendente");
-
-            // Adiciona o usuário atual como responsável pela execução da revisão
-            if (isRevisor && item.EtapaAtividade == EtapaAtividadeEnum.Revisao)
-                item.ResponsavelId = user.Id;
-
-            if (item.ResponsavelId != user.Id)
-                return BadRequest("Usuário não autorizado à executar esta atividade");
-
-            item.Entrega = atividade.Entrega;
-            item.Tempo = atividade.Tempo;
-            item.Observacao = atividade.Observacao;
-            item.TipoExecucao = atividade.TipoExecucao;
-
-            switch (atividade.TipoExecucao)
+            try
             {
-                case TipoExecucaoEnum.Pendente:
-                    return BadRequest("Favor selecionar o status de execução diferente de Pendente.");
+                var user = userManager.GetUserAsync(HttpContext.User).Result;
+                var isRevisor = await userManager.IsInRoleAsync(user, "Revisor");
+                var isExterno = await userManager.IsInRoleAsync(user, "Colaborador Externo");
+                var isCalculista = await userManager.IsInRoleAsync(user, "Calculista");
 
-                case TipoExecucaoEnum.Finalizado:
-                    item.TipoAtividadeId = atividade.TipoAtividadeId;
-                    item.TipoImpressao = atividade.TipoImpressao;
-                    break;
+                var atividade = db.Atividades.Include(x => x.TipoAtividade).Single(x => x.Id == model.Id);
 
-                case TipoExecucaoEnum.Revisar:
-                    if (atividade.EtapaAtividade == EtapaAtividadeEnum.Revisao)
-                        return BadRequest("Revisar atividade não permitido pois atividade já é de revisão");
+                if (atividade.TipoExecucao != TipoExecucaoEnum.Pendente)
+                    return BadRequest("Só é possível executar atividades no estado Pendente");
 
-                    item.TipoAtividadeId = atividade.TipoAtividadeId;
-                    item.TipoImpressao = atividade.TipoImpressao;
+                // Adiciona o usuário atual como responsável pela execução da revisão
+                if (isRevisor && atividade.EtapaAtividade == EtapaAtividadeEnum.Revisao)
+                    atividade.ResponsavelId = user.Id;
 
-                    db.Atividades.Add(new Atividade
-                    {
-                        ServicoId = item.ServicoId,
-                        AtividadeOrigemId = item.Id,
-                        TipoImpressao = item.TipoImpressao,
-                        TipoAtividadeId = atividade.TipoAtividadeId,
-                        EtapaAtividade = EtapaAtividadeEnum.Revisao,
-                    });
-                    break;
+                if (atividade.ResponsavelId != user.Id)
+                    return BadRequest("Usuário não autorizado à executar esta atividade");
 
-                case TipoExecucaoEnum.Refazer:
-                    var atividadeOrigem = db.Atividades.Single(x => x.Id == item.AtividadeOrigemId);
+                atividade.Entrega = model.Entrega;
 
-                    if (!isRevisor)
-                        return Unauthorized();
-                    else if (atividadeOrigem == null)
-                        return BadRequest("Atividade de revisão não relacionada à nenhuma atividade, impossível refazer");
-                    else if (atividade.EtapaAtividade != EtapaAtividadeEnum.Revisao)
-                        return BadRequest("Refazer atividade permitido apenas na etapa de Revisão");
+                if (!string.IsNullOrEmpty(model.Tempo) && model.Tempo.Split(':').Length != 2)
+                    return BadRequest("Tempo de execução inválido");
 
-                    db.Atividades.Add(new Atividade
-                    {
-                        ServicoId = atividadeOrigem.ServicoId,
-                        AtividadeOrigemId = item.Id, // Etapa de revisão como atividade que originou a refazer
-                        ResponsavelId = atividadeOrigem.ResponsavelId,
-                        TipoImpressao = atividadeOrigem.TipoImpressao,
-                        TipoAtividadeId = atividadeOrigem.TipoAtividadeId,
-                        EtapaAtividade = EtapaAtividadeEnum.Refazer,
-                    });
-                    break;
-                default:
-                    break;
+                if (isCalculista)
+                {
+                    atividade.Tempo = string.IsNullOrEmpty(model.Tempo)
+                                    ? (TimeSpan?)null
+                                    : new TimeSpan(int.Parse(model.Tempo.Split(':')[0]),    // hours
+                                              int.Parse(model.Tempo.Split(':')[1]),    // minutes
+                                              0);                               // seconds
+                }
+
+                if (atividade.TipoExecucao != TipoExecucaoEnum.Finalizado)
+                    atividade.Observacao = model.Observacao;
+
+                atividade.ObservacaoRevisor = model.ObservacaoRevisor;
+                atividade.ObservacaoComissao = model.ObservacaoComissao;
+                atividade.TipoExecucao = model.TipoExecucao;
+
+                switch (model.TipoExecucao)
+                {
+                    case TipoExecucaoEnum.Pendente:
+                        return BadRequest("Favor selecionar o status de execução diferente de Pendente.");
+
+                    case TipoExecucaoEnum.Finalizado:
+                        atividade.TipoAtividadeId = model.TipoAtividadeId;
+                        atividade.TipoImpressao = model.TipoImpressao;
+                        break;
+
+                    case TipoExecucaoEnum.Revisar:
+                        if (model.EtapaAtividade == EtapaAtividadeEnum.Revisao)
+                            return BadRequest("Revisar atividade não permitido pois atividade já é de revisão");
+
+                        atividade.TipoAtividadeId = model.TipoAtividadeId;
+                        atividade.TipoImpressao = model.TipoImpressao;
+
+                        db.Atividades.Add(new Atividade
+                        {
+                            ServicoId = atividade.ServicoId,
+                            AtividadeOrigemId = atividade.Id,
+                            TipoImpressao = atividade.TipoImpressao,
+                            TipoAtividadeId = model.TipoAtividadeId,
+                            EtapaAtividade = EtapaAtividadeEnum.Revisao,
+                        });
+                        break;
+
+                    case TipoExecucaoEnum.Refazer:
+                        var atividadeOrigem = db.Atividades.Single(x => x.Id == atividade.AtividadeOrigemId);
+
+                        if (!isRevisor)
+                            return Unauthorized();
+                        else if (atividadeOrigem == null)
+                            return BadRequest("Atividade de revisão não relacionada à nenhuma atividade, impossível refazer");
+                        else if (model.EtapaAtividade != EtapaAtividadeEnum.Revisao)
+                            return BadRequest("Refazer atividade permitido apenas na etapa de Revisão");
+
+                        db.Atividades.Add(new Atividade
+                        {
+                            ServicoId = atividadeOrigem.ServicoId,
+                            AtividadeOrigemId = atividade.Id, // Etapa de revisão como atividade que originou a refazer
+                            ResponsavelId = atividadeOrigem.ResponsavelId,
+                            TipoImpressao = atividadeOrigem.TipoImpressao,
+                            TipoAtividadeId = atividadeOrigem.TipoAtividadeId,
+                            EtapaAtividade = EtapaAtividadeEnum.Refazer,
+                        });
+                        break;
+
+                    case TipoExecucaoEnum.RefazerCancelado:
+                    case TipoExecucaoEnum.RevisarCancelado:
+                    case TipoExecucaoEnum.Cancelado:
+                        return BadRequest("Atividade cancelada, impossível executar.");
+                    default:
+                        break;
+                }
+
+
+                var servico = db.Servicos.Single(x => x.Id == atividade.ServicoId);
+
+                switch (atividade.TipoImpressao)
+                {
+                    case TipoImpressaoEnum.Excel:
+                        if (!servico.TipoImpressao.HasValue)
+                            servico.TipoImpressao = atividade.TipoImpressao;
+                        else if (servico.TipoImpressao == TipoImpressaoEnum.Word)
+                            servico.TipoImpressao = TipoImpressaoEnum.WordExcel;
+                        break;
+                    case TipoImpressaoEnum.Word:
+                        if (!servico.TipoImpressao.HasValue)
+                            servico.TipoImpressao = atividade.TipoImpressao;
+                        else if (servico.TipoImpressao == TipoImpressaoEnum.Excel)
+                            servico.TipoImpressao = TipoImpressaoEnum.WordExcel;
+                        break;
+                    case TipoImpressaoEnum.WordExcel:
+                        if (!servico.TipoImpressao.HasValue)
+                            servico.TipoImpressao = atividade.TipoImpressao;
+                        break;
+                    default:
+                        break;
+                }
+
+                db.SaveChanges();
+                return Ok(atividade);
             }
-
-            db.SaveChanges();
-            return Ok(item);
+            catch (Exception ex)
+            {
+                return BadRequest(ex.InnerException.Message);
+            }
         }
     }
 }

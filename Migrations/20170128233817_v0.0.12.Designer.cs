@@ -8,9 +8,10 @@ using Calcular.CoreApi.Models;
 namespace Calcular.CoreApi.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20170128233817_v0.0.12")]
+    partial class v0012
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
             modelBuilder
                 .HasAnnotation("ProductVersion", "1.0.0-rtm-21431")
@@ -37,15 +38,13 @@ namespace Calcular.CoreApi.Migrations
 
                     b.Property<int>("ServicoId");
 
-                    b.Property<long?>("TempoTicks");
+                    b.Property<decimal?>("Tempo");
 
                     b.Property<int>("TipoAtividadeId");
 
                     b.Property<int>("TipoExecucao");
 
                     b.Property<int?>("TipoImpressao");
-
-                    b.Property<decimal?>("Valor");
 
                     b.HasKey("Id");
 

@@ -67,5 +67,45 @@ namespace Calcular.CoreApi.Models.Business
                     return null;
             }
         }
+
+        public DateTime? DataCobranca
+        {
+            get
+            {
+                if (Cobrancas != null && Cobrancas.Count > 0)
+                    return Cobrancas.OrderByDescending(x => x.Id).First().DataCobranca;
+                else
+                    return null;
+            }
+        }
+
+        public DateTime? PrevisaoPagamento
+        {
+            get
+            {
+                if (Cobrancas != null && Cobrancas.Count > 0)
+                    return Cobrancas.OrderByDescending(x => x.Id).First().PrevisaoPagamento;
+                else
+                    return null;
+            }
+        }
+
+        public string StatusHonorario
+        {
+            get
+            {
+                if (Honorarios != null && Honorarios.Count > 0)
+                {
+                    if (Total <= 0)
+                        return "Pago";
+                    else if (Prazo.HasValue && Prazo.Value.Date < DateTime.Now.Date)
+                        return "Atrasado";
+                    else
+                        return "Pendente";
+                }
+                else
+                    return null;
+            }
+        }
     }
 }

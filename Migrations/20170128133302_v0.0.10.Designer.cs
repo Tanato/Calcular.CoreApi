@@ -8,9 +8,10 @@ using Calcular.CoreApi.Models;
 namespace Calcular.CoreApi.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20170128133302_v0.0.10")]
+    partial class v0010
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
             modelBuilder
                 .HasAnnotation("ProductVersion", "1.0.0-rtm-21431")
@@ -29,23 +30,19 @@ namespace Calcular.CoreApi.Migrations
 
                     b.Property<string>("Observacao");
 
-                    b.Property<string>("ObservacaoComissao");
-
                     b.Property<string>("ObservacaoRevisor");
 
                     b.Property<string>("ResponsavelId");
 
                     b.Property<int>("ServicoId");
 
-                    b.Property<long?>("TempoTicks");
+                    b.Property<decimal?>("Tempo");
 
                     b.Property<int>("TipoAtividadeId");
 
                     b.Property<int>("TipoExecucao");
 
                     b.Property<int?>("TipoImpressao");
-
-                    b.Property<decimal?>("Valor");
 
                     b.HasKey("Id");
 
@@ -299,17 +296,11 @@ namespace Calcular.CoreApi.Migrations
 
                     b.Property<int>("Status");
 
-                    b.Property<int?>("TipoImpressao");
-
-                    b.Property<int>("TipoServicoId");
-
                     b.Property<string>("Volumes");
 
                     b.HasKey("Id");
 
                     b.HasIndex("ProcessoId");
-
-                    b.HasIndex("TipoServicoId");
 
                     b.ToTable("Servicos");
                 });
@@ -327,18 +318,6 @@ namespace Calcular.CoreApi.Migrations
                     b.HasAlternateKey("Nome");
 
                     b.ToTable("TipoAtividades");
-                });
-
-            modelBuilder.Entity("Calcular.CoreApi.Models.Business.TipoServico", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<string>("Nome");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("TipoServicos");
                 });
 
             modelBuilder.Entity("Calcular.CoreApi.Models.Log", b =>
@@ -610,11 +589,6 @@ namespace Calcular.CoreApi.Migrations
                     b.HasOne("Calcular.CoreApi.Models.Business.Processo", "Processo")
                         .WithMany("Servicos")
                         .HasForeignKey("ProcessoId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("Calcular.CoreApi.Models.Business.TipoServico", "TipoServico")
-                        .WithMany()
-                        .HasForeignKey("TipoServicoId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 

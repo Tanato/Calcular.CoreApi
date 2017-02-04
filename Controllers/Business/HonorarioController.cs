@@ -18,6 +18,11 @@ namespace Calcular.CoreApi.Controllers.Business
             this.db = db;
         }
 
+        /// <summary>
+        /// Não utilizado no grid principal de Registro de Honorários, usa o de Processos
+        /// </summary>
+        /// <param name="filter"></param>
+        /// <returns></returns>
         [HttpGet]
         public IActionResult GetAll([FromQuery] string filter)
         {

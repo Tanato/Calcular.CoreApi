@@ -19,7 +19,7 @@ namespace Calcular.CoreApi.Models.Business
         public DateTime? Nascimento { get; set; }
         public PerfilEnum? Perfil { get; set; }
         public string Empresa { get; set; }
-        public decimal? Honorarios { get; set; }
+        public string Honorarios { get; set; }
         public ComoChegouEnum? ComoChegou { get; set; }
         public string ComoChegouDetalhe { get; set; }
         public string Observacao { get; set; }

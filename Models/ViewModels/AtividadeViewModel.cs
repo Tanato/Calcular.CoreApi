@@ -1,29 +1,14 @@
-﻿using Calcular.CoreApi.Shared;
+﻿using Calcular.CoreApi.Models.Business;
+using Calcular.CoreApi.Shared;
 using System;
-using System.ComponentModel;
-using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Calcular.CoreApi.Models.Business
+namespace Calcular.CoreApi.Models.ViewModels
 {
-    public class Atividade
+    public class AtividadeViewModel
     {
         public int Id { get; set; }
         public DateTime? Entrega { get; set; }
-
-
-        [Obsolete("Property Duration should be used instead.")]
-        [Browsable(false)]
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        public long? TempoTicks { get; set; }
-
-        [NotMapped]
-        public TimeSpan? Tempo
-        {
-#pragma warning disable 618
-            get { return TempoTicks.HasValue ? new TimeSpan(TempoTicks.Value) : (TimeSpan?)null; }
-            set { TempoTicks = value.HasValue ? value.Value.Ticks : (long?)null; }
-#pragma warning restore 618
-        }
+        public string Tempo { get; set; }
         public TipoImpressaoEnum? TipoImpressao { get; set; }
         public string Observacao { get; set; }
         public string ObservacaoRevisor { get; set; }
@@ -44,7 +29,5 @@ namespace Calcular.CoreApi.Models.Business
         public Atividade AtividadeOrigem { get; set; }
 
         public EtapaAtividadeEnum EtapaAtividade { get; set; }
-
-        public decimal? Valor { get; set; }
     }
 }

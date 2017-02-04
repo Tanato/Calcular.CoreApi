@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.ComponentModel;
 
 namespace Calcular.CoreApi.Shared
 {
@@ -12,9 +8,16 @@ namespace Calcular.CoreApi.Shared
 
         Finalizado,
 
-        [Description("Revisar")]
         Revisar,
 
         Refazer,
+
+        Cancelado,
+
+        [Description("Revisar Cancelado")]
+        RevisarCancelado,
+
+        [Description("Refazer Cancelado")]
+        RefazerCancelado,
     }
 }
