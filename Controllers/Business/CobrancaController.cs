@@ -27,7 +27,8 @@ namespace Calcular.CoreApi.Controllers.Business
         [HttpGet("processo")]
         public IActionResult GetAll([FromQuery] string filter, [FromQuery] bool all)
         {
-            bool isDate = DateTime.TryParse(filter, out DateTime filterDate);
+            DateTime filterDate;
+            bool isDate = DateTime.TryParse(filter, out filterDate);
 
             var result = db.Processos
                         .Include(x => x.Advogado)

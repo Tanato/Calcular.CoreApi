@@ -72,14 +72,22 @@ namespace Calcular.CoreApi.Controllers.Business
             var user = userManager.GetUserAsync(HttpContext.User).Result;
             var isRevisor = await userManager.IsInRoleAsync(user, "Revisor");
 
-            var result = db.Atividades
+            var isOriginal = !string.IsNullOrEmpty(filter) ? filter.Contains("original") : false;
+            var isRefazer = !string.IsNullOrEmpty(filter) ? filter.Contains("refazer") : false;
+            var isRevisar = !string.IsNullOrEmpty(filter) ? filter.Contains("revisar") : false;
+
+            var result = db.Atividades  
                         .Include(x => x.Responsavel)
                         .Include(x => x.Servico).ThenInclude(x => x.Processo).ThenInclude(x => x.Advogado)
                         .Include(x => x.TipoAtividade)
                         .Include(x => x.AtividadeOrigem).ThenInclude(x => x.Responsavel)
                         .Where(x => x.Servico != null && x.Servico.Processo != null
                                     && (x.ResponsavelId == user.Id || (isRevisor && x.EtapaAtividade == EtapaAtividadeEnum.Revisao)) // Filtra por usuário ou revisor
+                                    && (!isOriginal || x.EtapaAtividade == EtapaAtividadeEnum.Original)
+                                    && (!isRefazer || x.EtapaAtividade == EtapaAtividadeEnum.Refazer)
+                                    && (!isRevisar || x.EtapaAtividade == EtapaAtividadeEnum.Revisao)
                                     && (all || x.TipoExecucao == TipoExecucaoEnum.Pendente)) // Filtra atividades pendentes
+                        .OrderBy(x => x.Servico.Prazo)
                         .ToList()
                         .Select(x => new Atividade
                         {

@@ -1,4 +1,5 @@
-﻿using Calcular.CoreApi.Models;
+﻿using Calcular.CoreApi.Common;
+using Calcular.CoreApi.Models;
 using Calcular.CoreApi.Models.Business;
 using Calcular.CoreApi.Shared;
 using Microsoft.AspNetCore.Mvc;
@@ -68,6 +69,101 @@ namespace Calcular.CoreApi.Controllers.Business
                                    }
                                }
                            });
+
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Processo com serviço cadastrado e nenhuma atividade cadastrada
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("distribuir")]
+        public IActionResult GetDistribuir()
+        {
+            var result = db.Servicos
+                            .Include(x => x.Processo)
+                            .Include(x => x.Atividades)
+                            .Where(x => !x.Atividades.Any())
+                            .OrderBy(x => x.Prazo)
+                            .Select(x => new Servico
+                            {
+                                Id = x.Id,
+                                Prazo = x.Prazo,
+                                TipoServico = new TipoServico
+                                {
+                                    Id = x.TipoServico.Id,
+                                    Nome = x.TipoServico.Nome,
+                                },
+                                Processo = new Processo
+                                {
+                                    Id = x.Processo.Id,
+                                    Numero = x.Processo.Numero,
+                                }
+                            });
+
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Processos com todas as tarefas executadas (liberado para enviar)
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("enviar")]
+        public IActionResult GetEnviar()
+        {
+            var result = db.Servicos
+                            .Include(x => x.Processo)
+                            .Include(x => x.Atividades)
+                            .Where(x => x.Atividades.Any() && x.Atividades.All(a => a.Entrega.HasValue))
+                            .OrderBy(x => x.Prazo)
+                            .Select(x => new Servico
+                            {
+                                Id = x.Id,
+                                Prazo = x.Prazo,
+                                TipoServico = new TipoServico
+                                {
+                                    Id = x.TipoServico.Id,
+                                    Nome = x.TipoServico.Nome,
+                                },
+                                Processo = new Processo
+                                {
+                                    Id = x.Processo.Id,
+                                    Numero = x.Processo.Numero,
+                                }
+                            });
+
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Processos com vencimento próximo (no dia e no dia seguinte)
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("prazo")]
+        public IActionResult GetPrazoVencer()
+        {
+            var days = Utils.GetNextDates();
+
+            var result = db.Servicos
+                            .Include(x => x.Processo)
+                            .Include(x => x.Atividades)
+                            .Where(x => x.Prazo.HasValue && !x.Saida.HasValue && days.Any(d => d.Date == x.Prazo.Value))
+                            .OrderBy(x => x.Prazo)
+                            .Select(x => new Servico
+                            {
+                                Id = x.Id,
+                                Prazo = x.Prazo,
+                                TipoServico = new TipoServico
+                                {
+                                    Id = x.TipoServico.Id,
+                                    Nome = x.TipoServico.Nome,
+                                },
+                                Processo = new Processo
+                                {
+                                    Id = x.Processo.Id,
+                                    Numero = x.Processo.Numero,
+                                }
+                            });
 
             return Ok(result);
         }

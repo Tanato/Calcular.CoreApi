@@ -1,4 +1,5 @@
-﻿using Calcular.CoreApi.Models;
+﻿using Calcular.CoreApi.Common;
+using Calcular.CoreApi.Models;
 using Calcular.CoreApi.Models.Business;
 using Calcular.CoreApi.Models.ViewModels;
 using Calcular.CoreApi.Shared;
@@ -27,19 +28,12 @@ namespace Calcular.CoreApi.Controllers.Business
         public IActionResult GetAll([FromQuery] string filter)
         {
             var user = userManager.GetUserAsync(HttpContext.User).Result;
-            var days = GetNextDates();
+            var days = Utils.GetNextDates();
 
-            var result = db.Clientes.Where(x => x.Nascimento.HasValue && days.Any(d => d.DayOfYear == x.Nascimento.Value.DayOfYear))
-                .Select(x => new EventoViewModel
-                {
-                    Id = x.Id,
-                    Evento = "Aniversário",
-                    Detalhe = x.Nome,
-                    Data = x.Nascimento.Value,
-                }).ToList();
+            var result = new List<EventoViewModel>();
 
             // Revisor e Calculista
-            // Evento (aniversário, prazo do processo), Detalhe (nome do aniversariante ou numero do processo) e Data
+            // Evento (prazo do processo), Detalhe (nome do aniversariante ou numero do processo) e Data
             // Adicionar processos pra vencer o prazo de serviço relacionados ao usuário (mostrar o processo, independente a quantidade de atividades)
             if (userManager.IsInRoleAsync(user, "Revisor").Result || userManager.IsInRoleAsync(user, "Calculista").Result)
             {
@@ -83,14 +77,21 @@ namespace Calcular.CoreApi.Controllers.Business
             return Ok(result.OrderBy(x => x.Data));
         }
 
-        /// <summary>
-        /// Today and tomorrow, if friday show until monday.
-        /// </summary>
-        /// <returns></returns>
-        private IEnumerable<DateTime> GetNextDates()
+        [HttpGet("aniversarios")]
+        public IActionResult GetAniversarios()
         {
-            var today = DateTime.Now.DayOfWeek;
-            return Enumerable.Range(0, today == DayOfWeek.Friday ? 4 : today == DayOfWeek.Saturday ? 3 : 2).Select(x => DateTime.Now.AddDays(x).Date);
+            var days = Utils.GetNextDates();
+
+            var result = db.Clientes
+                            .Where(x => x.Nascimento.HasValue && days.Any(d => d.DayOfYear == x.Nascimento.Value.DayOfYear))
+                            .Select(x => new
+                            {
+                                Id = x.Id,
+                                Nome = x.Nome,
+                                Data = x.Nascimento.Value,
+                            }).ToList();
+
+            return Ok(result.OrderBy(x => x.Data));
         }
     }
 }
