@@ -93,5 +93,24 @@ namespace Calcular.CoreApi.Controllers.Business
 
             return Ok(result.OrderBy(x => x.Data));
         }
+
+        [HttpGet("alocacao")]
+        public IActionResult GetAlocacao()
+        {
+            var result = db.Atividades
+                            .Where(x => !string.IsNullOrEmpty(x.ResponsavelId) 
+                                        && (x.EtapaAtividade == EtapaAtividadeEnum.Original || x.EtapaAtividade == EtapaAtividadeEnum.Refazer)
+                                        && x.TipoExecucao == TipoExecucaoEnum.Pendente)
+                            .GroupBy(x => x.Responsavel)
+                            .Select(x => new
+                            {
+                                Responsavel = x.Key.UserName,
+                                Atividades = x.Count(z => z.EtapaAtividade == EtapaAtividadeEnum.Original),
+                                AtividadesRefazer = x.Count(z => z.EtapaAtividade == EtapaAtividadeEnum.Refazer),
+                            })
+                            .OrderBy(x => x.Atividades);
+
+            return Ok(result);
+        }
     }
 }
