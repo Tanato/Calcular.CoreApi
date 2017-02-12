@@ -281,5 +281,28 @@ namespace Calcular.CoreApi.Controllers.Business
                             .Select(x => new KeyValuePair<int, string>((int)x, EnumHelpers.GetEnumDescription(x)));
             return Ok(result);
         }
+
+        [HttpPost("observacao")]
+        public async Task<IActionResult> EditObservacao([FromBody] AtividadeViewModel model)
+        {
+            try
+            {
+                var user = await userManager.GetUserAsync(HttpContext.User);
+
+                var atividade = db.Atividades.Include(x => x.TipoAtividade).Single(x => x.Id == model.Id);
+
+                if (atividade.ResponsavelId != user.Id)
+                    return BadRequest("Usuário não autorizado à editar observação da atividade");
+                
+                atividade.ObservacaoComissao = model.ObservacaoComissao;
+
+                db.SaveChanges();
+                return Ok(atividade);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.InnerException.Message);
+            }
+        }
     }
 }

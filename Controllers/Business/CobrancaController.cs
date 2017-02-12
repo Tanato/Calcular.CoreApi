@@ -27,20 +27,36 @@ namespace Calcular.CoreApi.Controllers.Business
         [HttpGet("processo")]
         public IActionResult GetAll([FromQuery] string filter, [FromQuery] bool all)
         {
+            var pendente = filter.ContainsIgnoreNonSpacing("pendente");
+            var pago = filter.ContainsIgnoreNonSpacing("pago");
+            var atrasado = filter.ContainsIgnoreNonSpacing("atrasado");
+
             DateTime filterDate;
             bool isDate = DateTime.TryParse(filter, out filterDate);
 
-            var result = db.Processos
+            var query = db.Processos
                         .Include(x => x.Advogado)
                         .Include(x => x.Honorarios)
                         .Include(x => x.Cobrancas).ThenInclude(x => x.Usuario)
                         .Where(x => x.Honorarios.Any()
                                     && (isDate
-                                    || (string.IsNullOrEmpty(filter)
+                                        || (string.IsNullOrEmpty(filter)
+                                        || pago || pendente || atrasado
                                         || x.Numero.Contains(filter)
                                         || x.Advogado.Nome.Contains(filter)
-                                        || x.Advogado.Empresa.Contains(filter))))
-                        .OrderBy(x => x.Id)
+                                        || x.Advogado.Empresa.Contains(filter))));
+                        
+
+                        // Se busca por status de honorário, concretiza a busca antes de filtrar.
+            if (pago || pendente || atrasado)
+            {
+                query = query.ToList()
+                             .Where(x => (pendente && x.StatusHonorario == "Pendente")
+                                    || (pago && x.StatusHonorario == "Pago")
+                                    || (atrasado && x.StatusHonorario == "Atrasado")).AsQueryable();
+            }
+
+            var result = query.OrderBy(x => x.Id)
                         .ToList()
                         .Where(x => (all || x.Total > 0)
                                     && (!isDate || (x.DataCobranca.HasValue && x.DataCobranca.Value.Date == filterDate.Date)));
