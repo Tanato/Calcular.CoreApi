@@ -76,7 +76,7 @@ namespace Calcular.CoreApi.Controllers.Business
             var isRefazer = !string.IsNullOrEmpty(filter) ? filter.Contains("refazer") : false;
             var isRevisar = !string.IsNullOrEmpty(filter) ? filter.Contains("revisar") : false;
 
-            var result = db.Atividades  
+            var result = db.Atividades
                         .Include(x => x.Responsavel)
                         .Include(x => x.Servico).ThenInclude(x => x.Processo).ThenInclude(x => x.Advogado)
                         .Include(x => x.TipoAtividade)
@@ -135,7 +135,7 @@ namespace Calcular.CoreApi.Controllers.Business
         {
             var user = userManager.GetUserAsync(HttpContext.User).Result;
             var isRevisor = await userManager.IsInRoleAsync(user, "Revisor");
-            var idAdmOrGer = await userManager.IsInRoleAsync(user, "Administrativo") || await userManager.IsInRoleAsync(user, "Gerencial");
+            var isAdmOrGer = await userManager.IsInRoleAsync(user, "Administrativo") || await userManager.IsInRoleAsync(user, "Gerencial");
 
             var r = db.Atividades
                             .Include(x => x.Responsavel)
@@ -154,7 +154,7 @@ namespace Calcular.CoreApi.Controllers.Business
                 EtapaAtividade = r.EtapaAtividade,
                 Observacao = r.Observacao,
                 ObservacaoRevisor = isRevisor ? r.ObservacaoRevisor : string.Empty,
-                ObservacaoComissao = idAdmOrGer ? r.ObservacaoComissao : string.Empty,
+                ObservacaoComissao = r.ObservacaoComissao,
                 Responsavel = r.Responsavel,
                 ResponsavelId = r.ResponsavelId,
                 Servico = r.Servico,
@@ -166,7 +166,11 @@ namespace Calcular.CoreApi.Controllers.Business
                 TipoImpressao = r.TipoImpressao,
             };
 
-            return Ok(result);
+            if (isAdmOrGer || user.Id == result.ResponsavelId)
+                return Ok(result);
+            else
+                return BadRequest("Usuário não autorizado à visualizar atividade");
+
         }
 
         private static string GetHourFromTimespan(TimeSpan? tempo)
@@ -177,7 +181,9 @@ namespace Calcular.CoreApi.Controllers.Business
                 var horas = !string.IsNullOrEmpty(tempo.Value.ToString(@"hh")) ? Convert.ToInt16(tempo.Value.ToString(@"hh")) : 0;
                 var minutos = tempo.Value.ToString(@"mm");
 
-                return $"{dias * 24 + horas}:{minutos}";
+                var h = dias * 24 + horas;
+                return $"{h.ToString("D2")}:{minutos}";
+
             }
             else
                 return string.Empty;
@@ -246,11 +252,15 @@ namespace Calcular.CoreApi.Controllers.Business
         }
 
         [HttpGet("responsavel")]
-        public IActionResult GetResponsavel()
+        public async Task<IActionResult> GetResponsavel()
         {
-            var item = db.Users.ToList()
+            var user = userManager.GetUserAsync(HttpContext.User).Result;
+            var isCalculista = await userManager.IsInRoleAsync(user, "Calculista");
+
+            var item = db.Users
+                            .ToList()
                             .Where(x => (userManager.IsInRoleAsync(x, "Calculista").Result
-                                        || userManager.IsInRoleAsync(x, "Colaborador Externo").Result)
+                                        || (userManager.IsInRoleAsync(x, "Colaborador Externo").Result && !isCalculista))
                                      && !x.Inativo)
                             .Select(x => new { Id = x.Id, Nome = x.Name, Login = x.Logins, IsExterno = userManager.IsInRoleAsync(x, "Colaborador Externo").Result });
             return Ok(item);
@@ -293,7 +303,7 @@ namespace Calcular.CoreApi.Controllers.Business
 
                 if (atividade.ResponsavelId != user.Id)
                     return BadRequest("Usuário não autorizado à editar observação da atividade");
-                
+
                 atividade.ObservacaoComissao = model.ObservacaoComissao;
 
                 db.SaveChanges();

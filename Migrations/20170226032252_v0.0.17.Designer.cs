@@ -8,9 +8,10 @@ using Calcular.CoreApi.Models;
 namespace Calcular.CoreApi.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20170226032252_v0.0.17")]
+    partial class v0017
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
             modelBuilder
                 .HasAnnotation("ProductVersion", "1.0.0-rtm-21431")
@@ -169,8 +170,7 @@ namespace Calcular.CoreApi.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AtividadeId")
-                        .IsUnique();
+                    b.HasIndex("AtividadeId");
 
                     b.HasIndex("ComissaoFuncionarioMesId");
 
@@ -186,17 +186,11 @@ namespace Calcular.CoreApi.Migrations
 
                     b.Property<int>("Ano");
 
-                    b.Property<string>("FuncionarioId");
-
                     b.Property<int>("Mes");
 
                     b.Property<string>("ResponsavelId");
 
-                    b.Property<int>("Status");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("FuncionarioId");
 
                     b.HasIndex("ResponsavelId");
 
@@ -622,8 +616,8 @@ namespace Calcular.CoreApi.Migrations
             modelBuilder.Entity("Calcular.CoreApi.Models.Business.ComissaoAtividade", b =>
                 {
                     b.HasOne("Calcular.CoreApi.Models.Business.Atividade", "Atividade")
-                        .WithOne("ComissaoAtividade")
-                        .HasForeignKey("Calcular.CoreApi.Models.Business.ComissaoAtividade", "AtividadeId")
+                        .WithMany()
+                        .HasForeignKey("AtividadeId")
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("Calcular.CoreApi.Models.Business.ComissaoFuncionarioMes", "ComissaoFuncionarioMes")
@@ -634,10 +628,6 @@ namespace Calcular.CoreApi.Migrations
 
             modelBuilder.Entity("Calcular.CoreApi.Models.Business.ComissaoFuncionarioMes", b =>
                 {
-                    b.HasOne("Calcular.CoreApi.Models.User", "Funcionario")
-                        .WithMany()
-                        .HasForeignKey("FuncionarioId");
-
                     b.HasOne("Calcular.CoreApi.Models.User", "Responsavel")
                         .WithMany()
                         .HasForeignKey("ResponsavelId");

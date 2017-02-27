@@ -36,8 +36,15 @@ namespace Calcular.CoreApi.Models.Business
             {
                 if (Honorarios != null && Honorarios.Count > 0)
                 {
-                    var positivo = Honorarios.Where(x => x.Registro == RegistroEnum.Honorario).Sum(x => x.Valor);
-                    var negativo = Honorarios.Where(x => x.Registro == RegistroEnum.Pagamento).Sum(x => x.Valor);
+                    //ToDo
+                    //var listPositivo = Honorarios.Where(x => x.Registro == RegistroEnum.Honorario && !x.Cancelado && x.Valor.HasValue);
+                    //var positivo = listPositivo.Count() > 0 ? listPositivo.Sum(x => x.Valor) : null;
+
+                    //var listNegativo = Honorarios.Where(x => x.Registro == RegistroEnum.Pagamento && !x.Cancelado && x.Valor.HasValue);
+                    //var negativo = listNegativo.Count() > 0 ? listNegativo.Sum(x => x.Valor) : null;
+
+                    var positivo = Honorarios.Where(x => x.Registro == RegistroEnum.Honorario && !x.Cancelado).Sum(x => x.Valor);
+                    var negativo = Honorarios.Where(x => x.Registro == RegistroEnum.Pagamento && !x.Cancelado).Sum(x => x.Valor);
 
                     return positivo - negativo;
                 }
@@ -51,7 +58,7 @@ namespace Calcular.CoreApi.Models.Business
             get
             {
                 if (Honorarios != null && Honorarios.Count > 0)
-                    return Honorarios.Where(x => x.Registro == RegistroEnum.Honorario).Sum(x => x.Valor);
+                    return Honorarios.Where(x => x.Registro == RegistroEnum.Honorario && !x.Cancelado).Sum(x => x.Valor);
                 else
                     return null;
             }
@@ -62,7 +69,7 @@ namespace Calcular.CoreApi.Models.Business
             get
             {
                 if (Honorarios != null && Honorarios.Count > 0)
-                    return Honorarios.Where(x => x.Registro == RegistroEnum.Honorario).Max(x => x.Prazo);
+                    return Honorarios.Where(x => x.Registro == RegistroEnum.Honorario && !x.Cancelado).Max(x => x.Prazo);
                 else
                     return null;
             }

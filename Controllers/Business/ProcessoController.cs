@@ -35,7 +35,8 @@ namespace Calcular.CoreApi.Controllers.Business
                                         || x.Numero.Contains(filter)
                                         || x.Reu.Contains(filter)
                                         || x.Autor.Contains(filter)
-                                        || x.Advogado.Nome.Contains(filter))
+                                        || x.Advogado.Nome.Contains(filter)
+                                        || x.Advogado.Empresa.Contains(filter))
                             .OrderBy(x => x.Id)
                             .ToList();
 
@@ -57,7 +58,8 @@ namespace Calcular.CoreApi.Controllers.Business
                                         || x.Numero.Contains(filter)
                                         || x.Reu.Contains(filter)
                                         || x.Autor.Contains(filter)
-                                        || x.Advogado.Nome.Contains(filter));
+                                        || x.Advogado.Nome.Contains(filter)
+                                        || x.Advogado.Empresa.Contains(filter));
 
             // Se busca por status de honorário, concretiza a busca antes de filtrar.
             if (pago || pendente || atrasado)

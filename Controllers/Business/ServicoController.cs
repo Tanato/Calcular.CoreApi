@@ -85,9 +85,9 @@ namespace Calcular.CoreApi.Controllers.Business
         public IActionResult GetDistribuir()
         {
             var result = db.Servicos
-                            .Include(x => x.Processo)
+                            .Include(x => x.Processo).ThenInclude(x => x.Advogado)
                             .Include(x => x.Atividades)
-                            .Where(x => !x.Atividades.Any())
+                            .Where(x => !x.Atividades.Any() && x.Status == StatusEnum.Pendente)
                             .OrderBy(x => x.Prazo)
                             .Select(x => new Servico
                             {
@@ -102,6 +102,7 @@ namespace Calcular.CoreApi.Controllers.Business
                                 {
                                     Id = x.Processo.Id,
                                     Numero = x.Processo.Numero,
+                                    Advogado = new Cliente { Nome = x.Processo.Advogado.Nome },
                                 }
                             });
 
@@ -116,9 +117,11 @@ namespace Calcular.CoreApi.Controllers.Business
         public IActionResult GetEnviar()
         {
             var result = db.Servicos
-                            .Include(x => x.Processo)
+                            .Include(x => x.Processo).ThenInclude(x => x.Advogado)
                             .Include(x => x.Atividades)
-                            .Where(x => x.Atividades.Any() && x.Atividades.All(a => a.Entrega.HasValue))
+                            .Where(x => x.Atividades.Any() && x.Atividades.All(a => a.Entrega.HasValue)
+                                        && !x.Saida.HasValue
+                                        && x.Status == StatusEnum.Pendente)
                             .OrderBy(x => x.Prazo)
                             .Select(x => new Servico
                             {
@@ -133,6 +136,7 @@ namespace Calcular.CoreApi.Controllers.Business
                                 {
                                     Id = x.Processo.Id,
                                     Numero = x.Processo.Numero,
+                                    Advogado = new Cliente { Nome = x.Processo.Advogado.Nome },
                                 }
                             });
 
@@ -149,12 +153,13 @@ namespace Calcular.CoreApi.Controllers.Business
             var days = Utils.GetNextDates();
 
             var result = db.Servicos
-                            .Include(x => x.Processo)
+                            .Include(x => x.Processo).ThenInclude(x => x.Advogado)
                             .Include(x => x.Atividades)
                             .Where(x => x.Prazo.HasValue
                                         && !x.Saida.HasValue
                                         && x.Prazo.Value <= days.Last().Date
-                                        && x.Atividades.Any(a => !a.Entrega.HasValue))
+                                        && x.Atividades.Any(a => !a.Entrega.HasValue)
+                                        && x.Status == StatusEnum.Pendente)
                             .OrderBy(x => x.Prazo)
                             .Select(x => new Servico
                             {
@@ -169,6 +174,7 @@ namespace Calcular.CoreApi.Controllers.Business
                                 {
                                     Id = x.Processo.Id,
                                     Numero = x.Processo.Numero,
+                                    Advogado = new Cliente { Nome = x.Processo.Advogado.Nome },
                                 }
                             });
 
@@ -273,6 +279,7 @@ namespace Calcular.CoreApi.Controllers.Business
                                     Autor = x.Processo.Autor,
                                     Reu = x.Processo.Reu,
                                     Numero = x.Processo.Numero,
+                                    Parte = x.Processo.Parte,
                                     Advogado = new Cliente
                                     {
                                         Id = x.Processo.Advogado.Id,
@@ -334,13 +341,15 @@ namespace Calcular.CoreApi.Controllers.Business
                 .Single(x => x.Id == model.Id);
 
             item.Volumes = model.Volumes;
-            item.Entrada = model.Entrada;
             item.Prazo = model.Prazo;
 
             if (item.Atividades.Count > 0 && model.Saida != null)
             {
                 if (item.Atividades.Any(x => x.TipoExecucao != TipoExecucaoEnum.Finalizado && x.TipoExecucao != TipoExecucaoEnum.Revisar && x.TipoExecucao != TipoExecucaoEnum.Refazer))
                     return BadRequest("Existem atividades não finalizadas, impossível inserir data de saída.");
+
+                if (model.Saida < item.Entrada)
+                    return BadRequest("Data de saída não pode ser menor que data de entrada!");
 
                 item.Saida = model.Saida;
                 item.Status = StatusEnum.Entregue;

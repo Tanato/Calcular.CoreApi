@@ -29,6 +29,7 @@ namespace Calcular.CoreApi.Controllers.Business
             var result = db.Honorarios.Where(x => string.IsNullOrEmpty(filter)
                                              || x.Processo.Numero.Contains(filter)
                                              || x.Processo.Advogado.Nome.Contains(filter)
+                                             || x.Processo.Advogado.Empresa.Contains(filter)
                                              || x.Processo.Advogado.Telefone.Contains(filter)
                                              || x.Processo.Advogado.Celular.Contains(filter));
 
@@ -77,7 +78,9 @@ namespace Calcular.CoreApi.Controllers.Business
         public IActionResult Delete(int id)
         {
             var item = db.Honorarios.Single(x => x.Id == id);
-            db.Honorarios.Remove(item);
+
+            item.Cancelado = true;
+
             db.SaveChanges();
             return Ok(item);
         }

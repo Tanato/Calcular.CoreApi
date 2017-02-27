@@ -8,9 +8,10 @@ using Calcular.CoreApi.Models;
 namespace Calcular.CoreApi.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20170212202659_v0.0.16")]
+    partial class v0016
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
             modelBuilder
                 .HasAnnotation("ProductVersion", "1.0.0-rtm-21431")
@@ -135,9 +136,9 @@ namespace Calcular.CoreApi.Migrations
 
                     b.Property<bool>("Ativo");
 
-                    b.Property<long?>("HoraMaxTicks");
+                    b.Property<decimal>("HoraMaxima");
 
-                    b.Property<long?>("HoraMinTicks");
+                    b.Property<decimal>("HoraMinima");
 
                     b.Property<int>("TipoAtividadeId");
 
@@ -150,57 +151,6 @@ namespace Calcular.CoreApi.Migrations
                     b.HasIndex("TipoAtividadeId");
 
                     b.ToTable("Comissoes");
-                });
-
-            modelBuilder.Entity("Calcular.CoreApi.Models.Business.ComissaoAtividade", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<int>("AtividadeId");
-
-                    b.Property<int>("ComissaoFuncionarioMesId");
-
-                    b.Property<decimal?>("ValorAdicional");
-
-                    b.Property<decimal?>("ValorBase");
-
-                    b.Property<decimal?>("ValorFinal");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AtividadeId")
-                        .IsUnique();
-
-                    b.HasIndex("ComissaoFuncionarioMesId");
-
-                    b.ToTable("ComissaoAtividades");
-                });
-
-            modelBuilder.Entity("Calcular.CoreApi.Models.Business.ComissaoFuncionarioMes", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<DateTime>("Alteracao");
-
-                    b.Property<int>("Ano");
-
-                    b.Property<string>("FuncionarioId");
-
-                    b.Property<int>("Mes");
-
-                    b.Property<string>("ResponsavelId");
-
-                    b.Property<int>("Status");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("FuncionarioId");
-
-                    b.HasIndex("ResponsavelId");
-
-                    b.ToTable("ComissoesFuncionarioMes");
                 });
 
             modelBuilder.Entity("Calcular.CoreApi.Models.Business.Honorario", b =>
@@ -224,7 +174,7 @@ namespace Calcular.CoreApi.Migrations
 
                     b.Property<int>("TipoPagamento");
 
-                    b.Property<decimal?>("Valor");
+                    b.Property<decimal>("Valor");
 
                     b.HasKey("Id");
 
@@ -617,30 +567,6 @@ namespace Calcular.CoreApi.Migrations
                         .WithMany()
                         .HasForeignKey("TipoAtividadeId")
                         .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("Calcular.CoreApi.Models.Business.ComissaoAtividade", b =>
-                {
-                    b.HasOne("Calcular.CoreApi.Models.Business.Atividade", "Atividade")
-                        .WithOne("ComissaoAtividade")
-                        .HasForeignKey("Calcular.CoreApi.Models.Business.ComissaoAtividade", "AtividadeId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("Calcular.CoreApi.Models.Business.ComissaoFuncionarioMes", "ComissaoFuncionarioMes")
-                        .WithMany("ComissaoAtividades")
-                        .HasForeignKey("ComissaoFuncionarioMesId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("Calcular.CoreApi.Models.Business.ComissaoFuncionarioMes", b =>
-                {
-                    b.HasOne("Calcular.CoreApi.Models.User", "Funcionario")
-                        .WithMany()
-                        .HasForeignKey("FuncionarioId");
-
-                    b.HasOne("Calcular.CoreApi.Models.User", "Responsavel")
-                        .WithMany()
-                        .HasForeignKey("ResponsavelId");
                 });
 
             modelBuilder.Entity("Calcular.CoreApi.Models.Business.Honorario", b =>
