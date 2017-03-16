@@ -148,11 +148,13 @@ namespace MovieAngularJSApp.Controllers
 
             return Ok(new
             {
+                Id = user.Id,
                 Name = user.Name,
                 BirthDate = user.BirthDate,
                 Email = user.Email,
                 Login = user.UserName,
                 Roles = roles,
+                LoginDate = DateTime.Now,
             });
         }
     }

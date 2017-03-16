@@ -20,6 +20,8 @@ namespace Calcular.CoreApi.Models
         public DbSet<Cobranca> Cobrancas { get; set; }
         public DbSet<Proposta> Propostas { get; set; }
         public DbSet<Comissao> Comissoes { get; set; }
+        public DbSet<ComissaoFuncionarioMes> ComissoesFuncionarioMes { get; set; }
+        public DbSet<ComissaoAtividade> ComissaoAtividades { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -34,8 +36,6 @@ namespace Calcular.CoreApi.Models
             builder.Entity<IdentityRole>().ToTable("Roles");
 
             builder.Entity<TipoAtividade>().HasAlternateKey(x => x.Nome);
-            // builder.Entity<Cliente>().HasAlternateKey(x => x.Email);
-            // builder.Entity<Processo>().HasAlternateKey(x => x.Numero);
         }
     }
 }

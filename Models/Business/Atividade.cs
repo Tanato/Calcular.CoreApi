@@ -9,9 +9,8 @@ namespace Calcular.CoreApi.Models.Business
     {
         public int Id { get; set; }
         public DateTime? Entrega { get; set; }
-
-
-        [Obsolete("Property Duration should be used instead.")]
+        
+        [Obsolete("Property Tempo should be used instead.")]
         [Browsable(false)]
         [EditorBrowsable(EditorBrowsableState.Never)]
         public long? TempoTicks { get; set; }
@@ -42,6 +41,8 @@ namespace Calcular.CoreApi.Models.Business
 
         public int? AtividadeOrigemId { get; set; }
         public Atividade AtividadeOrigem { get; set; }
+        
+        public ComissaoAtividade ComissaoAtividade { get; set; }
 
         public EtapaAtividadeEnum EtapaAtividade { get; set; }
 

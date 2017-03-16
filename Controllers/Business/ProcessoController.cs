@@ -3,7 +3,6 @@ using Calcular.CoreApi.Models;
 using Calcular.CoreApi.Models.Business;
 using Calcular.CoreApi.Models.ViewModels;
 using Calcular.CoreApi.Shared;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -35,7 +34,8 @@ namespace Calcular.CoreApi.Controllers.Business
                                         || x.Numero.Contains(filter)
                                         || x.Reu.Contains(filter)
                                         || x.Autor.Contains(filter)
-                                        || x.Advogado.Nome.Contains(filter))
+                                        || x.Advogado.Nome.Contains(filter)
+                                        || x.Advogado.Empresa.Contains(filter))
                             .OrderBy(x => x.Id)
                             .ToList();
 
@@ -45,15 +45,30 @@ namespace Calcular.CoreApi.Controllers.Business
         [HttpGet("paged")]
         public IActionResult GetPaged([FromQuery] string filter, int itemsPerPage, int page = 1)
         {
+            var pendente = filter.ContainsIgnoreNonSpacing("pendente");
+            var pago = filter.ContainsIgnoreNonSpacing("pago");
+            var atrasado = filter.ContainsIgnoreNonSpacing("atrasado");
+
             var query = db.Processos
                             .Include(x => x.Advogado)
                             .Include(x => x.Honorarios)
-                            .Where(x => string.IsNullOrEmpty(filter)
+                            .Where(x => string.IsNullOrEmpty(filter) 
+                                        || pago || pendente || atrasado
                                         || x.Numero.Contains(filter)
                                         || x.Reu.Contains(filter)
                                         || x.Autor.Contains(filter)
-                                        || x.Advogado.Nome.Contains(filter));
-                            
+                                        || x.Advogado.Nome.Contains(filter)
+                                        || x.Advogado.Empresa.Contains(filter));
+
+            // Se busca por status de honorário, concretiza a busca antes de filtrar.
+            if (pago || pendente || atrasado)
+            {
+                query = query.ToList()
+                        .Where(x => (pendente && x.StatusHonorario == "Pendente")
+                                    || (pago && x.StatusHonorario == "Pago")
+                                    || (atrasado && x.StatusHonorario == "Atrasado")).AsQueryable();
+            }
+
             var table = query.OrderBy(x => x.Id)
                             .Skip((page - 1) * itemsPerPage).Take(itemsPerPage)
                             .ToList();
