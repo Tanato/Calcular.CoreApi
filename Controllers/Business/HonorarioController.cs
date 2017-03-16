@@ -1,7 +1,10 @@
-﻿using Calcular.CoreApi.Models;
+﻿using Calcular.CoreApi.BusinessObjects;
+using Calcular.CoreApi.Models;
 using Calcular.CoreApi.Models.Business;
+using Calcular.CoreApi.Models.ViewModels;
 using Calcular.CoreApi.Shared;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,22 +21,69 @@ namespace Calcular.CoreApi.Controllers.Business
             this.db = db;
         }
 
-        /// <summary>
-        /// Não utilizado no grid principal de Registro de Honorários, usa o de Processos
-        /// </summary>
-        /// <param name="filter"></param>
-        /// <returns></returns>
         [HttpGet]
-        public IActionResult GetAll([FromQuery] string filter)
+        public IActionResult GetPaged([FromQuery] string filter, int itemsPerPage, int page = 1)
         {
-            var result = db.Honorarios.Where(x => string.IsNullOrEmpty(filter)
-                                             || x.Processo.Numero.Contains(filter)
-                                             || x.Processo.Advogado.Nome.Contains(filter)
-                                             || x.Processo.Advogado.Empresa.Contains(filter)
-                                             || x.Processo.Advogado.Telefone.Contains(filter)
-                                             || x.Processo.Advogado.Celular.Contains(filter));
+            var comissoes = db.Comissoes.ToList();
 
-            return Ok(result.ToList());
+            var pendente = filter.ContainsIgnoreNonSpacing("pendente");
+            var pago = filter.ContainsIgnoreNonSpacing("pago");
+            var atrasado = filter.ContainsIgnoreNonSpacing("atrasado");
+
+            var query = db.Processos
+                            .Include(x => x.Advogado)
+                            .Include(x => x.Honorarios)
+                            .Include(x => x.Servicos).ThenInclude(x => x.Atividades).ThenInclude(x => x.ComissaoAtividade)
+                            .Where(x => string.IsNullOrEmpty(filter)
+                                        || pago || pendente || atrasado
+                                        || x.Numero.Contains(filter)
+                                        || x.Reu.Contains(filter)
+                                        || x.Autor.Contains(filter)
+                                        || x.Advogado.Nome.Contains(filter)
+                                        || x.Advogado.Empresa.Contains(filter));
+
+            // Se busca por status de honorário, concretiza a busca antes de filtrar.
+            if (pago || pendente || atrasado)
+            {
+                query = query.ToList()
+                        .Where(x => (pendente && x.StatusHonorario == "Pendente")
+                                    || (pago && x.StatusHonorario == "Pago")
+                                    || (atrasado && x.StatusHonorario == "Atrasado")).AsQueryable();
+            }
+
+            var table = query.OrderBy(x => x.Id)
+                            .Skip((page - 1) * itemsPerPage).Take(itemsPerPage)
+                            .ToList()
+                            .Select(x => {
+                                var valorComissao = x.Servicos.Sum(s => s.Atividades.Sum(a => a.Valor ?? (a.ComissaoAtividade != null ? a.ComissaoAtividade.ValorFinal : null) ?? ApuracaoComissaoBO.GetValorBase(comissoes, a)));
+                                return new ProcessoViewModel
+                                {
+                                    Numero = x.Numero,
+                                    Id = x.Id,
+                                    Autor = x.Autor,
+                                    Reu = x.Reu,
+                                    Honorario = x.Honorario,
+                                    Prazo = x.Prazo,
+                                    Total = x.Total,
+                                    CustoComissao = valorComissao > 0 ? (decimal?)valorComissao : null,
+                                    Parte = x.Parte,
+                                    Local = x.Local,
+                                    NumeroAutores = x.NumeroAutores,
+                                    AdvogadoId = x.AdvogadoId,
+                                    Vara = x.Vara,
+                                    Perito = x.Perito,
+                                    Indicacao = x.Indicacao,
+                                    StatusHonorario = x.StatusHonorario,
+                                    Advogado = new Cliente
+                                    {
+                                        Id = x.Advogado.Id,
+                                        Nome = x.Advogado.Nome,
+                                        Empresa = x.Advogado.Empresa,
+                                    },
+                                };
+                            });
+
+            return Ok(new { data = table, totalItems = query.Count() });
         }
 
         [HttpGet("{id}")]

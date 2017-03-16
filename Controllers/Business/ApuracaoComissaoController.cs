@@ -1,4 +1,5 @@
-﻿using Calcular.CoreApi.Models;
+﻿using Calcular.CoreApi.BusinessObjects;
+using Calcular.CoreApi.Models;
 using Calcular.CoreApi.Models.Business;
 using Calcular.CoreApi.Shared;
 using Microsoft.AspNetCore.Identity;
@@ -56,7 +57,7 @@ namespace Calcular.CoreApi.Controllers.Business
                                 {
                                     Id = 0,
                                     ComissaoFuncionarioMesId = 0,
-                                    ValorBase = GetValorBase(comissoes, a),
+                                    ValorBase = ApuracaoComissaoBO.GetValorBase(comissoes, a),
 
                                     AtividadeId = a.Id,
                                     Atividade = new Atividade
@@ -90,7 +91,7 @@ namespace Calcular.CoreApi.Controllers.Business
                                 new ComissaoAtividade
                                 {
                                     Id = a.ComissaoAtividade.Id,
-                                    ValorBase = GetValorBase(comissoes, a),
+                                    ValorBase = ApuracaoComissaoBO.GetValorBase(comissoes, a),
                                     ValorAdicional = a.ComissaoAtividade.ValorAdicional,
                                     ValorFinal = a.ComissaoAtividade.ValorFinal,
 
@@ -187,7 +188,7 @@ namespace Calcular.CoreApi.Controllers.Business
                     Mes = dataMesFechamento.Month,
                     ComissaoAtividades = atividades.Select(a =>
                     {
-                        var valBase = GetValorBase(comissoes, a);
+                        var valBase = ApuracaoComissaoBO.GetValorBase(comissoes, a);
                         var valAdicional = model.ComissaoAtividades.Single(c => c.AtividadeId == a.Id).ValorAdicional;
                         return new ComissaoAtividade
                         {
@@ -250,7 +251,7 @@ namespace Calcular.CoreApi.Controllers.Business
 
                     if (dbComissaoAtividade != null)
                     {
-                        var valorBase = GetValorBase(comissoes, dbComissaoAtividade.Atividade);
+                        var valorBase = ApuracaoComissaoBO.GetValorBase(comissoes, dbComissaoAtividade.Atividade);
                         dbComissaoAtividade.ValorBase = valorBase;
                         dbComissaoAtividade.ValorAdicional = modelItem.ValorAdicional;
                         dbComissaoAtividade.ValorFinal = modelItem.ValorAdicional + valorBase;
@@ -258,7 +259,7 @@ namespace Calcular.CoreApi.Controllers.Business
                     else
                     {
                         var a = db.Atividades.Single(x => x.Id == modelItem.AtividadeId);
-                        var valBase = GetValorBase(comissoes, a);
+                        var valBase = ApuracaoComissaoBO.GetValorBase(comissoes, a);
                         db.ComissaoAtividades.Add(new ComissaoAtividade
                         {
                             ComissaoFuncionarioMesId = funcionarioMes.Id,
@@ -308,25 +309,6 @@ namespace Calcular.CoreApi.Controllers.Business
         private static DateTime GetMesFiltro(int mes, int ano)
         {
             return new DateTime(ano == 0 ? DateTime.Now.Year : ano, mes == 0 ? DateTime.Now.Month : mes, 1).AddMonths(-1);
-        }
-
-        private decimal GetValorBase(IEnumerable<Comissao> comissoes, Atividade atividade)
-        {
-            // Se atividade possui valor, considera como valor base.
-            if (atividade.Valor.HasValue)
-                return atividade.Valor.Value;
-            else
-            {
-                var comissao = comissoes.Where(x => x.Ativo
-                                                    && x.Vigencia <= DateTime.Now
-                                                    && x.TipoAtividadeId == atividade.TipoAtividadeId
-                                                    && atividade.Tempo <= (x.HoraMax != null ? x.HoraMax.Value : TimeSpan.MaxValue)
-                                                    && atividade.Tempo >= (x.HoraMin != null ? x.HoraMin.Value : TimeSpan.MinValue))
-                         .OrderByDescending(x => x.Vigencia)
-                         .FirstOrDefault();
-
-                return comissao != null ? comissao.Valor : 0;
-            }
         }
     }
 }

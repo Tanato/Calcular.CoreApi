@@ -34,6 +34,11 @@ namespace Calcular.CoreApi.Models.ViewModels
 
         public decimal? Total { get; set; }
         public decimal? Honorario { get; set; }
+        public decimal? CustoComissao { get; set; }
         public DateTime? Prazo { get; set; }
+
+        public string StatusHonorario { get; set; }
+        public DateTime? PrevisaoPagamento { get; set; }
+        public DateTime? DataCobranca { get; set; }
     }
 }

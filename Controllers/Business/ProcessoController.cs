@@ -3,7 +3,6 @@ using Calcular.CoreApi.Models;
 using Calcular.CoreApi.Models.Business;
 using Calcular.CoreApi.Models.ViewModels;
 using Calcular.CoreApi.Shared;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;

@@ -280,6 +280,7 @@ namespace Calcular.CoreApi.Controllers.Business
                                     Reu = x.Processo.Reu,
                                     Numero = x.Processo.Numero,
                                     Parte = x.Processo.Parte,
+                                    Vara = x.Processo.Vara,
                                     Advogado = new Cliente
                                     {
                                         Id = x.Processo.Advogado.Id,
