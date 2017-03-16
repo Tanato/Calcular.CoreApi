@@ -279,6 +279,7 @@ namespace Calcular.CoreApi.Controllers.Business
                                     Autor = x.Processo.Autor,
                                     Reu = x.Processo.Reu,
                                     Numero = x.Processo.Numero,
+                                    StatusHonorario = x.Processo.StatusHonorario,
                                     Parte = x.Processo.Parte,
                                     Vara = x.Processo.Vara,
                                     Advogado = new Cliente

@@ -35,21 +35,14 @@ namespace Calcular.CoreApi.Controllers.Business
                             .Include(x => x.Honorarios)
                             .Include(x => x.Servicos).ThenInclude(x => x.Atividades).ThenInclude(x => x.ComissaoAtividade)
                             .Where(x => string.IsNullOrEmpty(filter)
-                                        || pago || pendente || atrasado
+                                        || (pago && x.StatusHonorario == StatusHonorarioEnum.Pago)
+                                        || (pendente  && x.StatusHonorario == StatusHonorarioEnum.Pendente)
+                                        || (atrasado && x.StatusHonorario == StatusHonorarioEnum.Pendente && x.PrazoHonorario.HasValue && x.PrazoHonorario.Value.Date < DateTime.Now.Date)
                                         || x.Numero.Contains(filter)
                                         || x.Reu.Contains(filter)
                                         || x.Autor.Contains(filter)
                                         || x.Advogado.Nome.Contains(filter)
                                         || x.Advogado.Empresa.Contains(filter));
-
-            // Se busca por status de honorário, concretiza a busca antes de filtrar.
-            if (pago || pendente || atrasado)
-            {
-                query = query.ToList()
-                        .Where(x => (pendente && x.StatusHonorario == "Pendente")
-                                    || (pago && x.StatusHonorario == "Pago")
-                                    || (atrasado && x.StatusHonorario == "Atrasado")).AsQueryable();
-            }
 
             var table = query.OrderBy(x => x.Id)
                             .Skip((page - 1) * itemsPerPage).Take(itemsPerPage)
@@ -63,7 +56,7 @@ namespace Calcular.CoreApi.Controllers.Business
                                     Autor = x.Autor,
                                     Reu = x.Reu,
                                     Honorario = x.Honorario,
-                                    Prazo = x.Prazo,
+                                    Prazo = x.PrazoHonorario,
                                     Total = x.Total,
                                     CustoComissao = valorComissao > 0 ? (decimal?)valorComissao : null,
                                     Parte = x.Parte,
@@ -73,7 +66,9 @@ namespace Calcular.CoreApi.Controllers.Business
                                     Vara = x.Vara,
                                     Perito = x.Perito,
                                     Indicacao = x.Indicacao,
-                                    StatusHonorario = x.StatusHonorario,
+                                    StatusHonorario = (x.StatusHonorario == StatusHonorarioEnum.Pago || x.StatusHonorario == StatusHonorarioEnum.Undefined) ? EnumHelpers.GetEnumDescription(x.StatusHonorario)
+                                                        : x.StatusHonorario == StatusHonorarioEnum.Pendente && x.PrazoHonorario.HasValue && x.PrazoHonorario.Value.Date < DateTime.Now.Date ? EnumHelpers.GetEnumDescription(StatusHonorarioEnum.Atrasado)
+                                                        : EnumHelpers.GetEnumDescription(StatusHonorarioEnum.Pendente),
                                     Advogado = new Cliente
                                     {
                                         Id = x.Advogado.Id,
@@ -100,6 +95,7 @@ namespace Calcular.CoreApi.Controllers.Business
             {
                 db.Honorarios.Add(honorario);
                 db.SaveChanges();
+                SetHonorarioStatus(honorario.ProcessoId);
             }
             catch (Exception ex)
             {
@@ -108,30 +104,15 @@ namespace Calcular.CoreApi.Controllers.Business
             return Ok(honorario);
         }
 
-        [HttpPut]
-        public IActionResult Put([FromBody] Honorario newItem)
-        {
-            var item = db.Honorarios.Single(x => x.Id == newItem.Id);
-
-            item.NotaFiscal = newItem.NotaFiscal;
-            item.Prazo = newItem.Prazo;
-            item.Registro = newItem.Registro;
-            item.TipoPagamento = newItem.TipoPagamento;
-            item.ProcessoId = newItem.ProcessoId;
-            item.Valor = newItem.Valor;
-
-            db.SaveChanges();
-            return Ok(item);
-        }
-
         [HttpDelete("{id}")]
         public IActionResult Delete(int id)
         {
             var item = db.Honorarios.Single(x => x.Id == id);
-
             item.Cancelado = true;
-
             db.SaveChanges();
+
+            SetHonorarioStatus(item.ProcessoId);
+
             return Ok(item);
         }
 
@@ -164,6 +145,36 @@ namespace Calcular.CoreApi.Controllers.Business
                 default:
                     return BadRequest();
             }
+        }
+
+        /// <summary>
+        /// Atualiza o status de pagamento de honorários do processo.
+        /// </summary>
+        /// <param name="honorario"></param>
+        private void SetHonorarioStatus(int processoId)
+        {
+            var processo = db.Processos.Include(x => x.Honorarios).Single(x => x.Id == processoId);
+
+            processo.PrazoHonorario = GetPrazo(processo);
+
+            if (processo.Honorarios == null || processo.Honorarios.Count(x => !x.Cancelado) == 0)
+                processo.StatusHonorario = StatusHonorarioEnum.Undefined;
+            else if (processo.Honorario.HasValue && processo.Honorario == 0 && !processo.Honorarios.Any(x => !x.Cancelado && x.Registro == RegistroEnum.Pagamento))
+                processo.StatusHonorario = StatusHonorarioEnum.Pendente;
+            else if (processo.Total <= 0)
+                processo.StatusHonorario = StatusHonorarioEnum.Pago;
+            else
+                processo.StatusHonorario = StatusHonorarioEnum.Pendente;
+
+            db.SaveChanges();
+        }
+
+        private DateTime? GetPrazo(Processo processo)
+        {
+            if (processo.Honorarios != null && processo.Honorarios.Count > 0)
+                return processo.Honorarios.Where(x => x.Registro == RegistroEnum.Honorario && !x.Cancelado).Max(x => x.Prazo);
+            else
+                return null;
         }
     }
 }

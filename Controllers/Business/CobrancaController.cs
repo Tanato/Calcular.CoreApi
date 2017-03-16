@@ -41,25 +41,49 @@ namespace Calcular.CoreApi.Controllers.Business
                         .Where(x => x.Honorarios.Any()
                                     && (isDate
                                         || (string.IsNullOrEmpty(filter)
-                                        || pago || pendente || atrasado
+                                        || (pago && x.StatusHonorario == StatusHonorarioEnum.Pago)
+                                        || (pendente && x.StatusHonorario == StatusHonorarioEnum.Pendente)
+                                        || (atrasado && x.StatusHonorario == StatusHonorarioEnum.Pendente && x.PrazoHonorario.HasValue && x.PrazoHonorario.Value.Date < DateTime.Now.Date)
                                         || x.Numero.Contains(filter)
                                         || x.Advogado.Nome.Contains(filter)
                                         || x.Advogado.Empresa.Contains(filter))));
-                        
-
-                        // Se busca por status de honorário, concretiza a busca antes de filtrar.
-            if (pago || pendente || atrasado)
-            {
-                query = query.ToList()
-                             .Where(x => (pendente && x.StatusHonorario == "Pendente")
-                                    || (pago && x.StatusHonorario == "Pago")
-                                    || (atrasado && x.StatusHonorario == "Atrasado")).AsQueryable();
-            }
 
             var result = query.OrderBy(x => x.Id)
                         .ToList()
-                        .Where(x => (all || x.Total > 0)
-                                    && (!isDate || (x.DataCobranca.HasValue && x.DataCobranca.Value.Date == filterDate.Date)));
+                        .Where(x => (all || x.StatusHonorario == StatusHonorarioEnum.Pendente || x.StatusHonorario == StatusHonorarioEnum.Atrasado)
+                                    && x.StatusHonorario != StatusHonorarioEnum.Undefined 
+                                    && (!isDate || (x.DataCobranca.HasValue && x.DataCobranca.Value.Date == filterDate.Date)))
+                        .Select(x =>
+                        {
+                            return new ProcessoViewModel
+                            {
+                                Numero = x.Numero,
+                                Id = x.Id,
+                                Autor = x.Autor,
+                                Reu = x.Reu,
+                                Honorario = x.Honorario,
+                                Prazo = x.PrazoHonorario,
+                                Total = x.Total,
+                                Parte = x.Parte,
+                                Local = x.Local,
+                                NumeroAutores = x.NumeroAutores,
+                                AdvogadoId = x.AdvogadoId,
+                                DataCobranca = x.DataCobranca,
+                                PrevisaoPagamento = x.PrevisaoPagamento,
+                                Vara = x.Vara,
+                                Perito = x.Perito,
+                                Indicacao = x.Indicacao,
+                                StatusHonorario = (x.StatusHonorario == StatusHonorarioEnum.Pago || x.StatusHonorario == StatusHonorarioEnum.Undefined )? EnumHelpers.GetEnumDescription(x.StatusHonorario)
+                                                    : x.StatusHonorario == StatusHonorarioEnum.Pendente && x.PrazoHonorario.HasValue && x.PrazoHonorario.Value.Date < DateTime.Now.Date ? EnumHelpers.GetEnumDescription(StatusHonorarioEnum.Atrasado)
+                                                    : EnumHelpers.GetEnumDescription(StatusHonorarioEnum.Pendente),
+                                Advogado = new Cliente
+                                {
+                                    Id = x.Advogado.Id,
+                                    Nome = x.Advogado.Nome,
+                                    Empresa = x.Advogado.Empresa,
+                                },
+                            };
+                        }); ;
 
             return Ok(result);
         }

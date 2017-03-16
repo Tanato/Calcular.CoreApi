@@ -2,9 +2,29 @@ using System;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Calcular.CoreApi.Models.Business;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 
 namespace Calcular.CoreApi.Models
 {
+    public class ApplicationContextFactory : IDbContextFactory<ApplicationDbContext>
+    {
+        public ApplicationDbContext Create()
+        {
+            var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
+            optionsBuilder.UseSqlServer(@"Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=Calcular.CoreSql;Integrated Security=True");
+
+            return new ApplicationDbContext(optionsBuilder.Options);
+        }
+
+        public ApplicationDbContext Create(DbContextFactoryOptions options)
+        {
+            var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
+            optionsBuilder.UseSqlServer(@"Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=Calcular.CoreSql;Integrated Security=True");
+
+            return new ApplicationDbContext(optionsBuilder.Options);
+        }
+    }
+
     public class ApplicationDbContext : IdentityDbContext<User>
     {
         public ApplicationDbContext(DbContextOptions options) : base(options) { }

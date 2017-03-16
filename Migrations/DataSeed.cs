@@ -1,5 +1,6 @@
 ﻿using Calcular.CoreApi.Models;
 using Calcular.CoreApi.Models.Business;
+using Calcular.CoreApi.Shared;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -62,6 +63,20 @@ namespace Calcular.CoreApi.Migrations
                 context.TipoAtividades.Add(new TipoAtividade { Nome = "Parecer" });
                 context.TipoAtividades.Add(new TipoAtividade { Nome = "Saldo Remanescente" });
             }
+
+            //foreach (var item in context.Processos.Include(x => x.Honorarios))
+            //{
+            //    if (item.Honorarios != null && item.Honorarios.Count(x => !x.Cancelado) > 0)
+            //        if (item.Honorario.HasValue && item.Honorario == 0 && !item.Honorarios.Any(x => !x.Cancelado && x.Registro == RegistroEnum.Pagamento))
+            //            item.StatusHonorario = StatusHonorarioEnum.Pendente;
+            //        else
+            //            item.StatusHonorario = item.Total <= 0 ? StatusHonorarioEnum.Pago : StatusHonorarioEnum.Pendente;
+            //    else
+            //        item.StatusHonorario = StatusHonorarioEnum.Undefined;
+
+
+            //    item.PrazoHonorario = item.Honorarios != null && item.Honorarios.Count > 0 ? item.Honorarios.Where(x => x.Registro == RegistroEnum.Honorario && !x.Cancelado).Max(x => x.Prazo) : null;
+            //}
 
             context.SaveChanges();
         }

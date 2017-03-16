@@ -50,24 +50,18 @@ namespace Calcular.CoreApi.Controllers.Business
             var atrasado = filter.ContainsIgnoreNonSpacing("atrasado");
 
             var query = db.Processos
-                            .Include(x => x.Advogado)
-                            .Include(x => x.Honorarios)
-                            .Where(x => string.IsNullOrEmpty(filter) 
-                                        || pago || pendente || atrasado
-                                        || x.Numero.Contains(filter)
-                                        || x.Reu.Contains(filter)
-                                        || x.Autor.Contains(filter)
-                                        || x.Advogado.Nome.Contains(filter)
-                                        || x.Advogado.Empresa.Contains(filter));
-
-            // Se busca por status de honorário, concretiza a busca antes de filtrar.
-            if (pago || pendente || atrasado)
-            {
-                query = query.ToList()
-                        .Where(x => (pendente && x.StatusHonorario == "Pendente")
-                                    || (pago && x.StatusHonorario == "Pago")
-                                    || (atrasado && x.StatusHonorario == "Atrasado")).AsQueryable();
-            }
+                             .Include(x => x.Advogado)
+                             .Include(x => x.Honorarios)
+                             .Include(x => x.Servicos)
+                             .Where(x => string.IsNullOrEmpty(filter)
+                                         || (pago && x.StatusHonorario == StatusHonorarioEnum.Pago)
+                                         || (pendente && x.StatusHonorario == StatusHonorarioEnum.Pendente)
+                                         || (atrasado && x.StatusHonorario == StatusHonorarioEnum.Pendente && x.PrazoHonorario.HasValue && x.PrazoHonorario.Value.Date < DateTime.Now.Date)
+                                         || x.Numero.Contains(filter)
+                                         || x.Reu.Contains(filter)
+                                         || x.Autor.Contains(filter)
+                                         || x.Advogado.Nome.Contains(filter)
+                                         || x.Advogado.Empresa.Contains(filter));
 
             var table = query.OrderBy(x => x.Id)
                             .Skip((page - 1) * itemsPerPage).Take(itemsPerPage)
@@ -97,7 +91,7 @@ namespace Calcular.CoreApi.Controllers.Business
                                 Autor = x.Autor,
                                 Reu = x.Reu,
                                 Honorario = x.Honorario,
-                                Prazo = x.Prazo,
+                                Prazo = x.PrazoHonorario,
                                 Total = x.Total,
                                 Parte = x.Parte,
                                 Local = x.Local,

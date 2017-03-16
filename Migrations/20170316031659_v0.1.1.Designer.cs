@@ -9,9 +9,10 @@ using Calcular.CoreApi.Shared;
 namespace Calcular.CoreApi.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20170316031659_v0.1.1")]
+    partial class v011
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
             modelBuilder
                 .HasAnnotation("ProductVersion", "1.0.3")
@@ -256,8 +257,6 @@ namespace Calcular.CoreApi.Migrations
                     b.Property<int>("Parte");
 
                     b.Property<string>("Perito");
-
-                    b.Property<DateTime?>("PrazoHonorario");
 
                     b.Property<string>("Reu");
 
