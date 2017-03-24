@@ -158,6 +158,7 @@ namespace Calcular.CoreApi.Controllers.Business
                 processo.Honorarios = null;
                 processo.ProcessoDetalhes = null;
                 processo.Servicos = null;
+                processo.StatusHonorario = StatusHonorarioEnum.Undefined;
 
                 db.Processos.Add(processo);
 
