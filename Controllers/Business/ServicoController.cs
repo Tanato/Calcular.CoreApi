@@ -290,7 +290,7 @@ namespace Calcular.CoreApi.Controllers.Business
                                 Atividades = x.Atividades.Select(a => new Atividade
                                 {
                                     Id = a.Id,
-                                    TipoAtividade = new TipoAtividade()
+                                    TipoAtividade = new TipoAtividade
                                     {
                                         Id = a.TipoAtividade.Id,
                                         Nome = a.TipoAtividade.Nome,
@@ -302,8 +302,7 @@ namespace Calcular.CoreApi.Controllers.Business
                                     EtapaAtividade = a.EtapaAtividade,
                                     ResponsavelId = a.ResponsavelId,
                                     Valor = idAdmOrGer ? a.Valor : null,
-
-                                }).ToList()
+                                }).ToList(),
                             })
                             .SingleOrDefault(x => x.Id == id);
 
@@ -315,6 +314,9 @@ namespace Calcular.CoreApi.Controllers.Business
         {
             try
             {
+                if (db.Servicos.Any(x => model.Processo.Numero == x.Processo.Numero && x.Status == StatusEnum.Pendente))
+                    return BadRequest("Existe serviço pendente para este processo.");
+
                 model.Processo = null;
                 db.Servicos.Add(model);
                 db.SaveChanges();

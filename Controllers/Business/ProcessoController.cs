@@ -159,6 +159,9 @@ namespace Calcular.CoreApi.Controllers.Business
                 if (processo.Id != 0)
                     return BadRequest("Para atualizar um processo existente, utilizar o método PUT");
 
+                if (db.Processos.Any(x => x.Numero == processo.Numero))
+                    return BadRequest("Já existe um processo cadastrado com este número.");
+
                 processo.Advogado = null;
                 processo.CreatedAt = DateTime.Now;
                 processo.Honorarios = null;
@@ -273,6 +276,32 @@ namespace Calcular.CoreApi.Controllers.Business
             var result = db.Processos.Where(x => string.IsNullOrEmpty(filter)
                                              || x.Vara.ContainsIgnoreNonSpacing(filter))
                                     .Select(x => x.Vara)
+                                    .Distinct()
+                                    .OrderBy(x => x)
+                                    .ToList();
+
+            return Ok(result);
+        }
+
+        [HttpGet("reu/{filter?}")]
+        public IActionResult GetReu([FromQuery] string filter = "")
+        {
+            var result = db.Processos.Where(x => string.IsNullOrEmpty(filter)
+                                             || x.Reu.ContainsIgnoreNonSpacing(filter))
+                                    .Select(x => x.Reu)
+                                    .Distinct()
+                                    .OrderBy(x => x)
+                                    .ToList();
+
+            return Ok(result);
+        }
+
+        [HttpGet("autor/{filter?}")]
+        public IActionResult GetAutor([FromQuery] string filter = "")
+        {
+            var result = db.Processos.Where(x => string.IsNullOrEmpty(filter)
+                                             || x.Autor.ContainsIgnoreNonSpacing(filter))
+                                    .Select(x => x.Autor)
                                     .Distinct()
                                     .OrderBy(x => x)
                                     .ToList();

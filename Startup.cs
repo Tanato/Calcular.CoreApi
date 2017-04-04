@@ -7,12 +7,14 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Authorization;
+using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Steeltoe.Extensions.Configuration;
+using Swashbuckle.AspNetCore.Swagger;
 using System;
 using System.IO.Compression;
 using System.Net;
@@ -52,6 +54,8 @@ namespace Calcular.CoreApi
             }
             else
             {
+                Console.WriteLine(GetConnectionString());
+
                 services.AddEntityFrameworkSqlServer();
                 services.AddDbContext<ApplicationDbContext>(o => o.UseSqlServer(GetConnectionString()), ServiceLifetime.Transient);
             }
@@ -83,6 +87,9 @@ namespace Calcular.CoreApi
             })
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 
+            services.Configure<GzipCompressionProviderOptions>(options => options.Level = CompressionLevel.Optimal);
+            services.AddResponseCompression(options => { options.Providers.Add<GzipCompressionProvider>(); });
+
             services.AddResponseCaching(x => { x.MaximumBodySize = 1000000; });
 
             services.AddMvc(config =>
@@ -101,7 +108,10 @@ namespace Calcular.CoreApi
                 options.SerializerSettings.DateFormatString = "yyyy-MM-ddThh:mm:ss-03:00";
             });
 
-            services.AddSwaggerGen();
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new Info { Title = "My API", Version = "v1" });
+            });
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
@@ -113,15 +123,8 @@ namespace Calcular.CoreApi
                     GC.Collect();
             });
 
+            app.UseResponseCompression();
             app.UseResponseCaching();
-
-            app.Use(async (context, next) =>
-            {
-                context.Response.Headers.Add("Content-encoding", "gzip");
-                context.Response.Body = new GZipStream(context.Response.Body, CompressionLevel.Fastest);
-                await next();
-                await context.Response.Body.FlushAsync();
-            });
 
             app.EnsureSeedIdentityAsync();
 
@@ -136,7 +139,10 @@ namespace Calcular.CoreApi
             app.UseMvc();
 
             app.UseSwagger();
-            app.UseSwaggerUi();
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
+            });
         }
 
         #region Private Methods

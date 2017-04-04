@@ -14,7 +14,7 @@ namespace Calcular.CoreApi.Controllers
         [HttpGet]
         public IActionResult Index()
         {
-            return Redirect("/swagger/ui/index.html");
+            return Redirect("/swagger");
         }
     }
 }
