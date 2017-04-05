@@ -52,7 +52,7 @@ namespace Calcular.CoreApi.Controllers.Business
             var query = db.Processos
                             .Include(x => x.Advogado)
                             .Include(x => x.Honorarios)
-                            .Where(x => string.IsNullOrEmpty(filter) 
+                            .Where(x => string.IsNullOrEmpty(filter)
                                         || pago || pendente || atrasado
                                         || x.Numero.Contains(filter)
                                         || x.Reu.Contains(filter)
@@ -86,6 +86,7 @@ namespace Calcular.CoreApi.Controllers.Business
             var result = db.Processos
                             .Include(x => x.Advogado)
                             .Include(x => x.Honorarios)
+                            .Include(x => x.FaseProcesso)
                             .Include(x => x.ProcessoDetalhes).ThenInclude(x => x.User)
                             .Where(x => string.IsNullOrEmpty(filter)
                                              || x.Numero.Contains(filter))
@@ -106,6 +107,8 @@ namespace Calcular.CoreApi.Controllers.Business
                                 Vara = x.Vara,
                                 Perito = x.Perito,
                                 Indicacao = x.Indicacao,
+                                FaseProcesso = x.FaseProcesso,
+                                FaseProcessoId = x.FaseProcessoId,
                                 Advogado = new Cliente
                                 {
                                     Id = x.Advogado.Id,
@@ -211,20 +214,33 @@ namespace Calcular.CoreApi.Controllers.Business
             }
         }
 
-        [HttpPut]
-        public IActionResult PutProcesso([FromBody] Processo newItem)
+        [HttpPost]
+        [Route("valorcausa")]
+        public IActionResult PostValorCausa([FromQuery] int processoId, [FromQuery] decimal valorCausa)
         {
-            var item = db.Processos.Single(x => x.Id == newItem.Id);
+            var processo = db.Processos.Single(x => x.Id == processoId);
 
-            item.Numero = newItem.Numero;
-            item.Autor = newItem.Autor;
-            item.Reu = newItem.Reu;
-            item.Local = newItem.Local;
-            item.Parte = newItem.Parte;
-            item.Vara = newItem.Vara;
-            item.AdvogadoId = newItem.AdvogadoId;
-            item.Indicacao = newItem.Indicacao;
-            item.Perito = newItem.Perito;
+            processo.ValorCausa = valorCausa;
+            db.SaveChanges();
+
+            return Ok();
+        }
+
+        [HttpPut]
+        public IActionResult PutProcesso([FromBody] Processo model)
+        {
+            var item = db.Processos.Single(x => x.Id == model.Id);
+
+            item.Numero = model.Numero;
+            item.Autor = model.Autor;
+            item.Reu = model.Reu;
+            item.Local = model.Local;
+            item.Parte = model.Parte;
+            item.Vara = model.Vara;
+            item.AdvogadoId = model.AdvogadoId;
+            item.Indicacao = model.Indicacao;
+            item.Perito = model.Perito;
+            item.FaseProcessoId = model.FaseProcessoId;
 
             db.SaveChanges();
             return Ok(item);

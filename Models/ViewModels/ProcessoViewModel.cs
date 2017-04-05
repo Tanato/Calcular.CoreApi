@@ -18,6 +18,9 @@ namespace Calcular.CoreApi.Models.ViewModels
         public int NumeroAutores { get; set; }
         public string Vara { get; set; }
 
+        public int? FaseProcessoId { get; set; }
+        public FaseProcesso FaseProcesso { get; set; }
+
         public int AdvogadoId { get; set; }
         public Cliente Advogado { get; set; }
         

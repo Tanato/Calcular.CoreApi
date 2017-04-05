@@ -1,8 +1,5 @@
-﻿using Calcular.CoreApi.Common;
-using Calcular.CoreApi.Models;
+﻿using Calcular.CoreApi.Models;
 using Calcular.CoreApi.Models.Business;
-using Calcular.CoreApi.Models.ViewModels;
-using Calcular.CoreApi.Shared;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -45,9 +42,9 @@ namespace Calcular.CoreApi.Controllers.Business
                                         || x.Numero.Contains(filter)
                                         || x.Advogado.Nome.Contains(filter)
                                         || x.Advogado.Empresa.Contains(filter))));
-                        
 
-                        // Se busca por status de honorário, concretiza a busca antes de filtrar.
+
+            // Se busca por status de honorário, concretiza a busca antes de filtrar.
             if (pago || pendente || atrasado)
             {
                 query = query.ToList()

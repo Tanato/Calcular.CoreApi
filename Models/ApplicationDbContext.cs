@@ -2,9 +2,27 @@ using System;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Calcular.CoreApi.Models.Business;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 
 namespace Calcular.CoreApi.Models
 {
+    public class TemporaryDbContextFactory : IDbContextFactory<ApplicationDbContext>
+    {
+        public ApplicationDbContext Create()
+        {
+            var builder = new DbContextOptionsBuilder<ApplicationDbContext>();
+            builder.UseSqlServer(@"Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=Calcular.CoreSql;Integrated Security=True");
+            return new ApplicationDbContext(builder.Options);
+        }
+
+        public ApplicationDbContext Create(DbContextFactoryOptions options)
+        {
+            var builder = new DbContextOptionsBuilder<ApplicationDbContext>();
+            builder.UseSqlServer(@"Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=Calcular.CoreSql;Integrated Security=True");
+            return new ApplicationDbContext(builder.Options);
+        }
+    }
+
     public class ApplicationDbContext : IdentityDbContext<User>
     {
         public ApplicationDbContext(DbContextOptions options) : base(options) { }
@@ -12,6 +30,7 @@ namespace Calcular.CoreApi.Models
         public DbSet<Atividade> Atividades { get; set; }
         public DbSet<TipoAtividade> TipoAtividades { get; set; }
         public DbSet<Processo> Processos { get; set; }
+        public DbSet<FaseProcesso> FaseProcessos { get; set; }
         public DbSet<Cliente> Clientes { get; set; }
         public DbSet<Servico> Servicos { get; set; }
         public DbSet<TipoServico> TipoServicos { get; set; }
