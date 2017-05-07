@@ -32,8 +32,10 @@ namespace Calcular.CoreApi.Models.ViewModels
         public List<ProcessoDetalhe> ProcessoDetalhes { get; set; }
         public List<Honorario> Honorarios { get; set; }
         public List<Servico> Servicos { get; set; }
-        public List<Cobranca> Cobrancas { get; set; }
         public List<Proposta> Propostas { get; set; }
+
+        public List<Cobranca> Cobrancas { get; set; }
+        public Cobranca UltimaCobranca { get; set; }
 
         public decimal? Total { get; set; }
         public decimal? Honorario { get; set; }
