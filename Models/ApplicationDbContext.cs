@@ -55,6 +55,11 @@ namespace Calcular.CoreApi.Models
             builder.Entity<IdentityRole>().ToTable("Roles");
 
             builder.Entity<TipoAtividade>().HasAlternateKey(x => x.Nome);
+
+            builder.Entity<Processo>()
+                .Property(p => p.Total)
+                .HasColumnType("money")
+                .HasComputedColumnSql(@"[dbo].TotalHonorarios([Id])");
         }
     }
 }

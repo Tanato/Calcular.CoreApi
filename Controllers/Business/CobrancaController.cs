@@ -33,7 +33,7 @@ namespace Calcular.CoreApi.Controllers.Business
             bool isDate = DateTime.TryParse(filter, out filterDate);
 
             var query = db.Processos
-                        .Include(x => x.Advogado).ThenInclude(x => x.Processos).ThenInclude(x => x.Cobrancas)
+                        .Include(x => x.Advogado)//.ThenInclude(x => x.Processos).ThenInclude(x => x.Cobrancas)
                         .Include(x => x.Honorarios)
                         .Include(x => x.Cobrancas).ThenInclude(x => x.Usuario)
                         .Where(x => x.Honorarios.Any()

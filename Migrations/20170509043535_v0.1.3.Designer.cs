@@ -9,9 +9,10 @@ using Calcular.CoreApi.Shared;
 namespace Calcular.CoreApi.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20170509043535_v0.1.3")]
+    partial class v013
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
             modelBuilder
                 .HasAnnotation("ProductVersion", "1.1.0-rtm-22752")
@@ -272,11 +273,6 @@ namespace Calcular.CoreApi.Migrations
                     b.Property<string>("Perito");
 
                     b.Property<string>("Reu");
-
-                    b.Property<decimal?>("Total")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("money")
-                        .HasComputedColumnSql("[dbo].TotalHonorarios([Id])");
 
                     b.Property<decimal?>("ValorCausa");
 

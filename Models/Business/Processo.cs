@@ -35,28 +35,7 @@ namespace Calcular.CoreApi.Models.Business
         public List<Cobranca> Cobrancas { get; set; }
         public List<Proposta> Propostas { get; set; }
 
-        public decimal? Total
-        {
-            get
-            {
-                if (Honorarios != null && Honorarios.Count > 0)
-                {
-                    //ToDo
-                    //var listPositivo = Honorarios.Where(x => x.Registro == RegistroEnum.Honorario && !x.Cancelado && x.Valor.HasValue);
-                    //var positivo = listPositivo.Count() > 0 ? listPositivo.Sum(x => x.Valor) : null;
-
-                    //var listNegativo = Honorarios.Where(x => x.Registro == RegistroEnum.Pagamento && !x.Cancelado && x.Valor.HasValue);
-                    //var negativo = listNegativo.Count() > 0 ? listNegativo.Sum(x => x.Valor) : null;
-
-                    var positivo = Honorarios.Where(x => x.Registro == RegistroEnum.Honorario && !x.Cancelado).Sum(x => x.Valor);
-                    var negativo = Honorarios.Where(x => x.Registro == RegistroEnum.Pagamento && !x.Cancelado).Sum(x => x.Valor);
-
-                    return positivo - negativo;
-                }
-                else
-                    return null;
-            }
-        }
+        public decimal? Total { get; set; }
 
         public decimal? Honorario
         {
@@ -106,7 +85,7 @@ namespace Calcular.CoreApi.Models.Business
         {
             get
             {
-                if (Honorarios != null && Honorarios.Count > 0)
+                if (Total.HasValue)
                 {
                     if (Total <= 0)
                         return "Pago";
