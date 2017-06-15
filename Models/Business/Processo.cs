@@ -23,7 +23,7 @@ namespace Calcular.CoreApi.Models.Business
 
         public int AdvogadoId { get; set; }
         public Cliente Advogado { get; set; }
-        
+
         public string Perito { get; set; }
         public string Indicacao { get; set; }
 
@@ -85,7 +85,11 @@ namespace Calcular.CoreApi.Models.Business
         {
             get
             {
-                if (Total.HasValue)
+                if (Honorarios == null || Honorarios.All(x => x.Cancelado) || Honorarios.Count() == 0)
+                {
+                    return "Vazio";
+                }
+                else if (Total.HasValue)
                 {
                     if (Total <= 0)
                         return "Pago";
@@ -94,8 +98,13 @@ namespace Calcular.CoreApi.Models.Business
                     else
                         return "Pendente";
                 }
+                else if (Honorario.HasValue && Honorario.Value == 0
+                        && Honorarios != null && !Honorarios.All(x => x.Cancelado))
+                {
+                    return "Pendente";
+                }
                 else
-                    return null;
+                    return string.Empty;
             }
         }
     }

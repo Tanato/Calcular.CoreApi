@@ -24,7 +24,7 @@ namespace Calcular.CoreApi.Migrations
             var roleManager = app.ApplicationServices.GetService<RoleManager<IdentityRole>>();
             var userManager = app.ApplicationServices.GetService<UserManager<User>>();
 
-            var roles = new[] { "Administrativo", "Calculista", "Revisor", "Gerencial", "Associado", "Colaborador Externo" };
+            var roles = new[] { "Administrativo", "Calculista", "Revisor", "Gerencial", "Associado", "Colaborador Externo", "Financeiro" };
 
             foreach (var item in roles)
             {
@@ -42,7 +42,7 @@ namespace Calcular.CoreApi.Migrations
 
                     if (AdminUser != null && roleManager.RoleExistsAsync("Admin").Result)
                     {
-                        await userManager.AddToRolesAsync(AdminUser, new string[] { "Administrativo", "Calculista", "Revisor", "Gerencial", "Colaborador Externo" });
+                        await userManager.AddToRolesAsync(AdminUser, new string[] { "Administrativo", "Calculista", "Revisor", "Gerencial", "Colaborador Externo", "Financeiro" });
                     }
                 }
             }

@@ -25,38 +25,37 @@ namespace Calcular.CoreApi.Controllers.Business
         [HttpGet]
         public IActionResult GetAll([FromQuery] string filter, [FromQuery] bool all)
         {
-            var pendente = filter.ContainsIgnoreNonSpacing("pendente");
-            var pago = filter.ContainsIgnoreNonSpacing("pago");
-            var atrasado = filter.ContainsIgnoreNonSpacing("atrasado");
-
             DateTime filterDate;
             bool isDate = DateTime.TryParse(filter, out filterDate);
 
+            var pendente = filter.ContainsIgnoreNonSpacing("pendente");
+            var atrasado = filter.ContainsIgnoreNonSpacing("atrasado");
+            var vazio = filter.ContainsIgnoreNonSpacing("vazio");
+
             var query = db.Processos
-                        .Include(x => x.Advogado)//.ThenInclude(x => x.Processos).ThenInclude(x => x.Cobrancas)
+                        .Include(x => x.Advogado)
                         .Include(x => x.Honorarios)
                         .Include(x => x.Cobrancas).ThenInclude(x => x.Usuario)
                         .Where(x => x.Honorarios.Any()
                                     && (isDate
                                         || (string.IsNullOrEmpty(filter)
-                                        || pago || pendente || atrasado
+                                        || pendente || atrasado || vazio
                                         || x.Numero.Contains(filter)
                                         || x.Advogado.Nome.Contains(filter)
                                         || x.Advogado.Empresa.Contains(filter))));
 
-
-            // Se busca por status de honorário, concretiza a busca antes de filtrar.
-            if (pago || pendente || atrasado)
+            // Se busca por status de honorÃ¡rio, concretiza a busca antes de filtrar.
+            if (pendente || atrasado || vazio)
             {
                 query = query.ToList()
                              .Where(x => (pendente && x.StatusHonorario == "Pendente")
-                                    || (pago && x.StatusHonorario == "Pago")
+                                    || (vazio && x.StatusHonorario == "Vazio")
                                     || (atrasado && x.StatusHonorario == "Atrasado")).AsQueryable();
             }
 
             var ordered = query
                         .ToList()
-                        .Where(x => (all || x.Total > 0)
+                        .Where(x => (all || x.StatusHonorario != "Pago")
                                     && (!isDate || (x.DataCobranca.HasValue && x.DataCobranca.Value.Date == filterDate.Date)));
 
             var result = ordered.GroupBy(x => new { x.Advogado, x.StatusHonorario }, (key, elements) => new CobrancaViewModel

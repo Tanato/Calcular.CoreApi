@@ -29,13 +29,14 @@ namespace Calcular.CoreApi.Controllers.Business
             var pendente = filter.ContainsIgnoreNonSpacing("pendente");
             var pago = filter.ContainsIgnoreNonSpacing("pago");
             var atrasado = filter.ContainsIgnoreNonSpacing("atrasado");
+            var vazio = filter.ContainsIgnoreNonSpacing("vazio");
 
             var query = db.Processos
                             .Include(x => x.Advogado)
                             .Include(x => x.Honorarios)
                             .Include(x => x.Servicos).ThenInclude(x => x.Atividades).ThenInclude(x => x.ComissaoAtividade)
                             .Where(x => string.IsNullOrEmpty(filter)
-                                        || pago || pendente || atrasado
+                                        || pago || pendente || atrasado || vazio
                                         || x.Numero.Contains(filter)
                                         || x.Reu.Contains(filter)
                                         || x.Autor.Contains(filter)
@@ -43,12 +44,13 @@ namespace Calcular.CoreApi.Controllers.Business
                                         || x.Advogado.Empresa.Contains(filter));
 
             // Se busca por status de honorário, concretiza a busca antes de filtrar.
-            if (pago || pendente || atrasado)
+            if (pago || pendente || atrasado || vazio)
             {
                 query = query.ToList()
                         .Where(x => (pendente && x.StatusHonorario == "Pendente")
                                     || (pago && x.StatusHonorario == "Pago")
-                                    || (atrasado && x.StatusHonorario == "Atrasado")).AsQueryable();
+                                    || (atrasado && x.StatusHonorario == "Atrasado")
+                                    || (vazio && x.StatusHonorario == "Vazio")).AsQueryable();
             }
 
             var table = query.OrderBy(x => x.Id)
