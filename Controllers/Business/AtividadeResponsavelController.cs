@@ -27,9 +27,6 @@ namespace Calcular.CoreApi.Controllers.Business
         [HttpGet]
         public async Task<IActionResult> GetAll([FromQuery] string filter)
         {
-            //var user = userManager.GetUserAsync(HttpContext.User).Result;
-            //var isRevisor = await userManager.IsInRoleAsync(user, "Revisor");
-
             var result = db.Atividades
                         .Include(x => x.Responsavel)
                         .Include(x => x.Servico).ThenInclude(x => x.Processo).ThenInclude(x => x.Advogado)

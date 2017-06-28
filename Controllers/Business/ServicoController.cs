@@ -183,8 +183,11 @@ namespace Calcular.CoreApi.Controllers.Business
 
         [HttpGet]
         [Route("numero")]
-        public IActionResult GetByNumber([FromQuery] string filter)
+        public async Task<IActionResult> GetByNumber([FromQuery] string filter)
         {
+            var user = userManager.GetUserAsync(HttpContext.User).Result;
+            var idAdmOrGer = await userManager.IsInRoleAsync(user, "Administrativo") || await userManager.IsInRoleAsync(user, "Gerencial");
+            
             var result = db.Servicos
                             .Include(x => x.TipoServico)
                             .Include(x => x.Processo).ThenInclude(x => x.Advogado)
@@ -238,7 +241,75 @@ namespace Calcular.CoreApi.Controllers.Business
                                     EtapaAtividade = a.EtapaAtividade,
                                     TipoImpressao = a.TipoImpressao,
                                     TipoExecucao = a.TipoExecucao,
-                                    Valor = a.Valor,
+                                    Valor = idAdmOrGer ? a.Valor : null,
+                                }).ToList(),
+                            })
+                            .ToList();
+
+            return Ok(result);
+        }
+
+        [HttpGet]
+        [Route("processo")]
+        public async Task<IActionResult> GetByProcessoId([FromQuery] int processoId)
+        {
+            var user = userManager.GetUserAsync(HttpContext.User).Result;
+            var idAdmOrGer = await userManager.IsInRoleAsync(user, "Administrativo") || await userManager.IsInRoleAsync(user, "Gerencial");
+
+            var result = db.Servicos
+                            .Include(x => x.TipoServico)
+                            .Include(x => x.Processo).ThenInclude(x => x.Advogado)
+                            .Include(x => x.Atividades).ThenInclude(x => x.Responsavel)
+                            .Include(x => x.Atividades).ThenInclude(x => x.TipoAtividade)
+                            .Where(x => x.Processo.Id == processoId)
+                            .OrderByDescending(x => x.Entrada)
+                            .Select(x => new Servico
+                            {
+                                Id = x.Id,
+                                Entrada = x.Entrada,
+                                TipoServicoId = x.TipoServicoId,
+                                TipoImpressao = x.TipoImpressao,
+                                TipoServico = new TipoServico
+                                {
+                                    Id = x.TipoServico.Id,
+                                    Nome = x.TipoServico.Nome,
+                                },
+                                Prazo = x.Prazo,
+                                Saida = x.Saida,
+                                Status = x.Status,
+                                Volumes = x.Volumes,
+                                Processo = new Processo
+                                {
+                                    Id = x.Processo.Id,
+                                    Autor = x.Processo.Autor,
+                                    Reu = x.Processo.Reu,
+                                    Numero = x.Processo.Numero,
+                                    Local = x.Processo.Local,
+                                    Parte = x.Processo.Parte,
+                                    Advogado = new Cliente
+                                    {
+                                        Id = x.Processo.Advogado.Id,
+                                        Nome = x.Processo.Advogado.Nome,
+                                        Telefone = x.Processo.Advogado.Telefone,
+                                        Celular = x.Processo.Advogado.Celular,
+                                        Email = x.Processo.Advogado.Email,
+                                    }
+                                },
+                                Atividades = x.Atividades.Select(a => new Atividade
+                                {
+                                    Id = a.Id,
+                                    Entrega = a.Entrega,
+                                    TipoAtividade = new TipoAtividade
+                                    {
+                                        Id = a.TipoAtividade.Id,
+                                        Nome = a.TipoAtividade.Nome
+                                    },
+                                    Responsavel = a.Responsavel,
+                                    Tempo = a.Tempo,
+                                    EtapaAtividade = a.EtapaAtividade,
+                                    TipoImpressao = a.TipoImpressao,
+                                    TipoExecucao = a.TipoExecucao,
+                                    Valor = idAdmOrGer ? a.Valor : null,
                                 }).ToList(),
                             })
                             .ToList();
