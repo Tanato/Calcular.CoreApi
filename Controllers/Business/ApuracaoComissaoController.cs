@@ -84,6 +84,8 @@ namespace Calcular.CoreApi.Controllers.Business
                                                 Id = a.Servico.ProcessoId,
                                                 Numero = a.Servico.Processo.Numero,
                                                 NumeroAutores = a.Servico.Processo.NumeroAutores,
+                                                Reu = a.Servico.Processo.Reu,
+                                                Autor = a.Servico.Processo.Autor,
                                             },
                                         },
                                     }
@@ -135,6 +137,8 @@ namespace Calcular.CoreApi.Controllers.Business
                                                 Id = a.Servico.ProcessoId,
                                                 Numero = a.Servico.Processo.Numero,
                                                 NumeroAutores = a.Servico.Processo.NumeroAutores,
+                                                Reu = a.Servico.Processo.Reu,
+                                                Autor = a.Servico.Processo.Autor,
                                             },
                                         },
                                     }

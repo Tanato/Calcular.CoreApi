@@ -161,6 +161,7 @@ namespace Calcular.CoreApi.Controllers.Business
         {
             var result = Enum.GetValues(typeof(PerfilEnum))
                             .Cast<PerfilEnum>()
+                            .Where(x => x == PerfilEnum.Advogado || x == PerfilEnum.Outro) //retirado das regras os demais tipos
                             .Select(x => new KeyValuePair<int, string>((int)x, EnumHelpers.GetEnumDescription(x)));
             return Ok(result);
         }

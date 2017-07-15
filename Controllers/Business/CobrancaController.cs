@@ -36,13 +36,12 @@ namespace Calcular.CoreApi.Controllers.Business
                         .Include(x => x.Advogado)
                         .Include(x => x.Honorarios)
                         .Include(x => x.Cobrancas).ThenInclude(x => x.Usuario)
-                        .Where(x => x.Honorarios.Any()
-                                    && (isDate
+                        .Where(x => isDate
                                         || (string.IsNullOrEmpty(filter)
                                         || pendente || atrasado || vazio
                                         || x.Numero.Contains(filter)
                                         || x.Advogado.Nome.Contains(filter)
-                                        || x.Advogado.Empresa.Contains(filter))));
+                                        || x.Advogado.Empresa.Contains(filter)));
 
             // Se busca por status de honorÃ¡rio, concretiza a busca antes de filtrar.
             if (pendente || atrasado || vazio)
@@ -66,7 +65,6 @@ namespace Calcular.CoreApi.Controllers.Business
                     TotalPendente = Convert.ToDecimal(elements.Sum(p => p.Total)),
                     TotalHonorarios = Convert.ToDecimal(elements.Sum(p => p.Honorario)),
                     TotalProcessosPendentes = elements.Count(),
-                    //Processos = elements,
                     StatusHonorario = key.StatusHonorario,
                 })
                 .OrderBy(x => x.Advogado.Nome);
@@ -96,8 +94,7 @@ namespace Calcular.CoreApi.Controllers.Business
                             .Include(x => x.Advogado)
                             .Include(x => x.Honorarios)
                             .Include(x => x.Cobrancas).ThenInclude(x => x.Usuario)
-                            .Where(x => x.Honorarios.Any()
-                                    &&  x.Advogado.Id == id)
+                            .Where(x => x.Advogado.Id == id)
                             .ToList() 
                             .Where(x => x.StatusHonorario.ToUpper() == status.ToUpper());
 
