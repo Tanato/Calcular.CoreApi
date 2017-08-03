@@ -196,5 +196,55 @@ namespace Calcular.CoreApi.Controllers.Business
 
             return Ok(result);
         }
+
+        /// <summary>
+        /// Relatório de Honorários por mês
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("tipoprocesso")]
+        [Authorize(Roles = "Gerencial")]
+        public async Task<IActionResult> GetTipoProcessos(DateTime? dataFim = null, int quantidadeMeses = 12)
+        {
+            var dataInicio = dataFim.HasValue ? dataFim.Value.AddMonths(-quantidadeMeses + 1) : DateTime.Now.AddMonths(-quantidadeMeses + 1);
+            dataInicio = new DateTime(dataInicio.Year, dataInicio.Month, 1);
+
+            var meses = Enumerable.Range(0, quantidadeMeses).Select(i => dataInicio.AddMonths(i));
+
+            var data = await db.Servicos
+                               .Include(x => x.Processo).ThenInclude(x => x.Servicos)
+                               .Where(x => x.Entrada >= dataInicio).ToListAsync();
+
+            var grouped = data.GroupBy(x => new
+            {
+                Mes = new DateTime(x.Entrada.Year, x.Entrada.Month, 1),
+                Oficial = x.Processo.Parte == ParteEnum.Oficial,
+            })
+                                .Select(x => new
+                                {
+                                    Mes = x.Key.Mes,
+                                    Oficial = x.Key.Oficial,
+                                    Quantidade = x.Count(),
+                                })
+                                .OrderBy(x => x.Mes);
+
+            var novos = data.Where(x => x.Processo.Servicos.Count == 1)
+                            .GroupBy(x => new DateTime(x.Entrada.Year, x.Entrada.Month, 1))
+                            .Select(x => new
+                            {
+                                Mes = x.Key,
+                                Quantidade = x.Count(),
+                            })
+                            .OrderBy(x => x.Mes);
+
+            var result = new
+            {
+                Meses = meses.Select(m => m.ToString("MMM/yy", new CultureInfo("pt-PT"))),
+                QuantidadeOficial = meses.Select(x => grouped.SingleOrDefault(g => g.Oficial && g.Mes == x)?.Quantidade ?? 0 ),
+                QuantidadeAssistencia = meses.Select(x => grouped.SingleOrDefault(g => !g.Oficial && g.Mes == x)?.Quantidade ?? 0),
+                QuantidadeNovos = meses.Select(x => novos.SingleOrDefault(g => g.Mes == x)?.Quantidade ?? 0),
+            };
+
+            return Ok(result);
+        }
     }
 }
