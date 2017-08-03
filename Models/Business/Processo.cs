@@ -35,6 +35,9 @@ namespace Calcular.CoreApi.Models.Business
         public List<Cobranca> Cobrancas { get; set; }
         public List<Proposta> Propostas { get; set; }
 
+        /// <summary>
+        /// Procedure que Calcula valor pendente do processo.
+        /// </summary>
         public decimal? Total { get; set; }
 
         public decimal? Honorario
