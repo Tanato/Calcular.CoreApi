@@ -239,9 +239,171 @@ namespace Calcular.CoreApi.Controllers.Business
             var result = new
             {
                 Meses = meses.Select(m => m.ToString("MMM/yy", new CultureInfo("pt-PT"))),
-                QuantidadeOficial = meses.Select(x => grouped.SingleOrDefault(g => g.Oficial && g.Mes == x)?.Quantidade ?? 0 ),
+                QuantidadeOficial = meses.Select(x => grouped.SingleOrDefault(g => g.Oficial && g.Mes == x)?.Quantidade ?? 0),
                 QuantidadeAssistencia = meses.Select(x => grouped.SingleOrDefault(g => !g.Oficial && g.Mes == x)?.Quantidade ?? 0),
                 QuantidadeNovos = meses.Select(x => novos.SingleOrDefault(g => g.Mes == x)?.Quantidade ?? 0),
+            };
+
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Relatório de Honorários por mês
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("tempoprodutividade")]
+        [Authorize(Roles = "Gerencial")]
+        public async Task<IActionResult> GetTempoProdutividade(DateTime? mes, bool? calculo)
+        {
+            var mesFiltro = mes.HasValue ? mes.Value : DateTime.Now;
+            mesFiltro = new DateTime(mesFiltro.Year, mesFiltro.Month, 1);
+
+            var tipoAtividades = db.TipoAtividades.ToList();
+
+            var source = db.Atividades
+                               .Include(x => x.TipoAtividade)
+                               .OrderBy(x => x.Responsavel.Name)
+                               .Where(x => x.Tempo.HasValue
+                                           && x.Entrega.HasValue
+                                           && x.Entrega.Value.Year == mesFiltro.Year
+                                           && x.EtapaAtividade == EtapaAtividadeEnum.Original);
+
+            var dataMesColaborador = await source.Where(x => x.Entrega.Value.Month == mesFiltro.Month)
+                               .GroupBy(x => new
+                               {
+                                   Calculista = x.Responsavel,
+                                   TipoAtividade = x.TipoAtividade,
+                               })
+                               .Select(x => new
+                               {
+                                   TipoAtividade = x.Key.TipoAtividade,
+                                   Calculista = x.Key.Calculista.Name,
+                                   Media = new TimeSpan((long)x.Average(y => y.Tempo.Value.Ticks)).TotalMilliseconds
+                               })
+                               .ToListAsync();
+
+            var dataMesGeral = await source.Where(x => x.Entrega.Value.Month == mesFiltro.Month)
+                               .GroupBy(x => new { TipoAtividade = x.TipoAtividade })
+                               .Select(x => new
+                               {
+                                   TipoAtividade = x.Key.TipoAtividade,
+                                   Media = new TimeSpan((long)x.Average(y => y.Tempo.Value.Ticks)).TotalMilliseconds
+                               })
+                               .ToListAsync();
+
+            var dataAnoColaborador = await source
+                               .GroupBy(x => new
+                               {
+                                   Calculista = x.Responsavel,
+                                   TipoAtividade = x.TipoAtividade,
+                               })
+                               .Select(x => new
+                               {
+                                   TipoAtividade = x.Key.TipoAtividade,
+                                   Calculista = x.Key.Calculista.Name,
+                                   Media = new TimeSpan((long)x.Average(y => y.Tempo.Value.Ticks)).TotalMilliseconds
+                               })
+                               .ToListAsync();
+
+            var dataAnoGeral = await source
+                               .GroupBy(x => new { TipoAtividade = x.TipoAtividade })
+                               .Select(x => new
+                               {
+                                   TipoAtividade = x.Key.TipoAtividade,
+                                   Media = new TimeSpan((long)x.Average(y => y.Tempo.Value.Ticks)).TotalMilliseconds
+                               })
+                               .ToListAsync();
+
+
+            #region Report Calculo
+            var reportCalculo = Enumerable.Empty<object>().Select(x => new { Name = string.Empty, Type = string.Empty, Data = Enumerable.Empty<double>() }).ToList();
+            reportCalculo.Add(new
+            {
+                Name = "Media Geral",
+                Type = "areaspline",
+                Data = tipoAtividades.Where(t => t.Nome.Contains("Cálculo"))
+                                     .Select(t => dataMesGeral.SingleOrDefault(y => y.TipoAtividade.Id == t.Id)?.Media ?? 0),
+            });
+            reportCalculo.AddRange(dataMesColaborador.GroupBy(x => x.Calculista)
+                                                     .Select(x => new
+                                                     {
+                                                         Name = x.Key,
+                                                         Type = "spline",
+                                                         Data = tipoAtividades.Where(t => t.Nome.Contains("Cálculo"))
+                                                                              .Select(t => x.SingleOrDefault(y => y.TipoAtividade.Id == t.Id)?.Media ?? 0),
+                                                     }));
+            #endregion
+
+            #region Report Levantamento
+            var reportLevantamento = Enumerable.Empty<object>().Select(x => new { Name = string.Empty, Type = string.Empty, Data = Enumerable.Empty<double>() }).ToList();
+            reportLevantamento.Add(new
+            {
+                Name = "Media Geral",
+                Type = "areaspline",
+                Data = tipoAtividades.Where(t => t.Nome.Contains("Levantamento"))
+                                     .Select(t => dataMesGeral.SingleOrDefault(y => y.TipoAtividade.Id == t.Id)?.Media ?? 0),
+            });
+            reportLevantamento.AddRange(dataMesColaborador.GroupBy(x => x.Calculista)
+                                                          .Select(x => new
+                                                          {
+                                                              Name = x.Key,
+                                                              Type = "spline",
+                                                              Data = tipoAtividades.Where(t => t.Nome.Contains("Levantamento"))
+                                                                                   .Select(t => x.SingleOrDefault(y => y.TipoAtividade.Id == t.Id)?.Media ?? 0),
+                                                          }));
+            #endregion
+
+            #region Report Demais
+            var reportDemais = Enumerable.Empty<object>().Select(x => new { Name = string.Empty, Type = string.Empty, Data = Enumerable.Empty<double>() }).ToList();
+            reportDemais.Add(new
+            {
+                Name = "Media Geral",
+                Type = "areaspline",
+                Data = tipoAtividades.Where(t => !t.Nome.Contains("Cálculo") && !t.Nome.Contains("Levantamento"))
+                                     .Select(t => dataMesGeral.SingleOrDefault(y => y.TipoAtividade.Id == t.Id)?.Media ?? 0),
+            });
+            reportDemais.AddRange(dataMesColaborador.GroupBy(x => x.Calculista)
+                                                    .Select(x => new
+                                                    {
+                                                        Name = x.Key,
+                                                        Type = "spline",
+                                                        Data = tipoAtividades.Where(t => !t.Nome.Contains("Cálculo") && !t.Nome.Contains("Levantamento"))
+                                                                             .Select(t => x.SingleOrDefault(y => y.TipoAtividade.Id == t.Id)?.Media ?? 0),
+                                                    }));
+            #endregion
+
+            #region Report Calculo Anual
+            var reportCalculoAnual = Enumerable.Empty<object>().Select(x => new { Name = string.Empty, Type = string.Empty, Data = Enumerable.Empty<double>() }).ToList();
+            reportCalculoAnual.Add(new
+            {
+                Name = "Media Geral",
+                Type = "areaspline",
+                Data = tipoAtividades.Where(t => t.Nome.Contains("Cálculo"))
+                                     .Select(t => dataAnoGeral.SingleOrDefault(y => y.TipoAtividade.Id == t.Id)?.Media ?? 0),
+            });
+            reportCalculoAnual.AddRange(dataAnoColaborador.GroupBy(x => x.Calculista)
+                                                          .Select(x => new
+                                                          {
+                                                              Name = x.Key,
+                                                              Type = "spline",
+                                                              Data = tipoAtividades.Where(t => t.Nome.Contains("Cálculo"))
+                                                                                   .Select(t => x.SingleOrDefault(y => y.TipoAtividade.Id == t.Id)?.Media ?? 0),
+                                                          }));
+            #endregion
+
+            var result = new
+            {
+                Calculos = tipoAtividades.Where(x => x.Nome.Contains("Cálculo")).Select(x => x.Nome),
+                ReportCalculo = reportCalculo,
+
+                Levantamentos = tipoAtividades.Where(x => x.Nome.Contains("Levantamento")).Select(x => x.Nome),
+                ReportLevantamento = reportLevantamento,
+
+                Demais = tipoAtividades.Where(x => !x.Nome.Contains("Cálculo") && !x.Nome.Contains("Levantamento")).Select(x => x.Nome),
+                ReportDemais = reportDemais,
+
+                CalculosAnual = tipoAtividades.Where(x => x.Nome.Contains("Cálculo")).Select(x => x.Nome),
+                ReportCalculoAnual = reportCalculoAnual,
             };
 
             return Ok(result);
