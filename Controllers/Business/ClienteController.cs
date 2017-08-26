@@ -143,10 +143,8 @@ namespace Calcular.CoreApi.Controllers.Business
                         .Include(x => x.Processos)
                         .Single(x => x.Id == id);
 
-            if (item.Processos?.Count > 0)
-            {
-                return BadRequest("O processo possúi Honorários/Serviços associados e não pode ser excluído");
-            }
+            if (item.Processos.Any())
+                return BadRequest("O cliente possui processos associados e não pode ser excluído");
             else
             {
                 db.Clientes.Remove(item);

@@ -10,6 +10,7 @@ using Calcular.CoreApi.Shared;
 using System;
 using System.Globalization;
 using Calcular.CoreApi.Models.ViewModels;
+using Microsoft.AspNetCore.Identity;
 
 namespace Calcular.CoreApi.Controllers.Business
 {
@@ -17,10 +18,12 @@ namespace Calcular.CoreApi.Controllers.Business
     public class ReportController : Controller
     {
         private readonly ApplicationDbContext db;
+        private readonly UserManager<User> userManager;
 
-        public ReportController(ApplicationDbContext db)
+        public ReportController(ApplicationDbContext db, UserManager<User> userManager)
         {
             this.db = db;
+            this.userManager = userManager;
         }
 
         /// <summary>
@@ -258,6 +261,8 @@ namespace Calcular.CoreApi.Controllers.Business
             var mesFiltro = mes.HasValue ? mes.Value : DateTime.Now;
             mesFiltro = new DateTime(mesFiltro.Year, mesFiltro.Month, 1);
 
+            var calculistas = db.Users.Where(x => (userManager.IsInRoleAsync(x, "Calculista").Result)).ToList();
+
             var tipoAtividades = db.TipoAtividades.ToList();
 
             var source = db.Atividades
@@ -266,7 +271,8 @@ namespace Calcular.CoreApi.Controllers.Business
                                .Where(x => x.Tempo.HasValue
                                            && x.Entrega.HasValue
                                            && x.Entrega.Value.Year == mesFiltro.Year
-                                           && x.EtapaAtividade == EtapaAtividadeEnum.Original);
+                                           && x.EtapaAtividade == EtapaAtividadeEnum.Original
+                                           && calculistas.Any(c => c.Id == x.ResponsavelId));
 
             var dataMesColaborador = await source.Where(x => x.Entrega.Value.Month == mesFiltro.Month)
                                .GroupBy(x => new
