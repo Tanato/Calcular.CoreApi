@@ -24,9 +24,19 @@ namespace Calcular.CoreApi.Controllers
         }
 
         [HttpGet]
-        public ActionResult Get()
+        public async Task<ActionResult> Get()
         {
-            return Ok(db.Roles.Select(x => new { Id = x.Id, Name = x.Name }));
+            var roleOrder = new Dictionary<string, int>() {
+                { "Gerencial", 0 },
+                { "Administrativo", 1 },
+                { "Revisor", 2 },
+                { "Calculista", 3 },
+                { "Colaborador Externo", 4 },
+            };
+
+            var result = await db.Roles.Select(x => new { Id = x.Id, Name = x.Name }).ToListAsync();
+
+            return Ok(result.OrderBy(x => roleOrder.TryGetValue(x.Name, out var value) ? roleOrder[x.Name] : 1000));
         }
 
         [HttpGet("{id}")]

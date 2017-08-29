@@ -136,11 +136,14 @@ namespace MovieAngularJSApp.Controllers
                 if (ModelState.IsValid)
                 {
                     var user = await userManager.FindByNameAsync(usuario.UserName);
-                    var token = await userManager.GeneratePasswordResetTokenAsync(user); //ToDo Improve Security.
-                    var result = await userManager.ResetPasswordAsync(user, token, "senha123");
+                    var result = await userManager.RemovePasswordAsync(user);
                     if (result.Succeeded)
                     {
-                        return Ok();
+                        result = await userManager.AddPasswordAsync(user, "senha123");
+                        if (result.Succeeded)
+                        {
+                            return Ok();
+                        }
                     }
                     else
                     {

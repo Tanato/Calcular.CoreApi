@@ -42,7 +42,6 @@ namespace Calcular.CoreApi.Controllers
                     Perfis = string.Join(", ", roles.Where(x => user.Roles.Any(z => z.RoleId == x.Id))),
                 });
 
-
             return Ok(users);
         }
 
