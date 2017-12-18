@@ -43,7 +43,7 @@ namespace Calcular.CoreApi.Controllers.Business
                                        || (entregue && x.Status == StatusEnum.Entregue)
                                        || (calcelado && x.Status == StatusEnum.Cancelado))
                                        && (all || x.Status == StatusEnum.Pendente))
-                            .OrderBy(x => x.Prazo)
+                           .OrderBy(x => x.Entrada).ThenBy(x => x.Prazo)
                            .ToList()
                            .Select(x => new Servico
                            {

@@ -215,13 +215,12 @@ namespace Calcular.CoreApi.Controllers.Business
 
             var data = await db.Servicos
                                .Include(x => x.Processo).ThenInclude(x => x.Servicos)
-                               .Where(x => x.Entrada >= dataInicio).ToListAsync();
+                               .Where(x => x.Entrada >= dataInicio)
+                               .Select(x => new { Id = x.Id, Mes = new DateTime(x.Entrada.Year, x.Entrada.Month, 1), Oficial = x.Processo.Parte == ParteEnum.Oficial, QtdServicos = x.Processo.Servicos.Count })
+                               .OrderBy(x => x.Mes).ThenBy(x => x.Id)
+                               .ToListAsync();
 
-            var grouped = data.GroupBy(x => new
-            {
-                Mes = new DateTime(x.Entrada.Year, x.Entrada.Month, 1),
-                Oficial = x.Processo.Parte == ParteEnum.Oficial,
-            })
+            var grouped = data.GroupBy(x => new { Mes = x.Mes, Oficial = x.Oficial })
                                 .Select(x => new
                                 {
                                     Mes = x.Key.Mes,
@@ -230,8 +229,8 @@ namespace Calcular.CoreApi.Controllers.Business
                                 })
                                 .OrderBy(x => x.Mes);
 
-            var novos = data.Where(x => x.Processo.Servicos.Count == 1)
-                            .GroupBy(x => new DateTime(x.Entrada.Year, x.Entrada.Month, 1))
+            var novos = data.Where(x => x.QtdServicos == 1)
+                            .GroupBy(x => x.Mes)
                             .Select(x => new
                             {
                                 Mes = x.Key,
