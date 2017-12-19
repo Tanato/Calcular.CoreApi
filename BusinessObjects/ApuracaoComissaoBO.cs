@@ -16,7 +16,7 @@ namespace Calcular.CoreApi.BusinessObjects
             else
             {
                 var comissao = comissoes.Where(x => x.Ativo
-                                                    && x.Vigencia <= DateTime.Now
+                                                    && x.Vigencia <= atividade.Entrega
                                                     && x.TipoAtividadeId == atividade.TipoAtividadeId
                                                     && atividade.Tempo <= (x.HoraMax != null ? x.HoraMax.Value : TimeSpan.MaxValue)
                                                     && atividade.Tempo >= (x.HoraMin != null ? x.HoraMin.Value : TimeSpan.MinValue))

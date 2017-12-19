@@ -22,7 +22,10 @@ namespace Calcular.CoreApi.Controllers.Business
         [HttpGet]
         public IActionResult GetAll([FromQuery] int filter)
         {
-            return Ok(db.Comissoes.Include(x => x.TipoAtividade).Where(x => x.Ativo && (filter == 0 || x.TipoAtividade.Id == filter)).ToList());
+            return Ok(db.Comissoes.Include(x => x.TipoAtividade)
+                                    .Where(x => x.Ativo && (filter == 0 || x.TipoAtividade.Id == filter))
+                                    .OrderBy(x => x.TipoAtividade.Nome).OrderByDescending(a => a.Vigencia.Date)
+                                    .ToList());
         }
 
         [HttpPost]

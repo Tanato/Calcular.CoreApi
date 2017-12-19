@@ -252,15 +252,12 @@ namespace Calcular.CoreApi.Controllers.Business
         }
 
         [HttpGet("responsavel")]
-        public async Task<IActionResult> GetResponsavel()
+        public IActionResult GetResponsavel()
         {
-            var user = userManager.GetUserAsync(HttpContext.User).Result;
-            var isCalculista = await userManager.IsInRoleAsync(user, "Calculista");
-
             var item = db.Users
                             .ToList()
                             .Where(x => (userManager.IsInRoleAsync(x, "Calculista").Result
-                                        || (userManager.IsInRoleAsync(x, "Colaborador Externo").Result && !isCalculista))
+                                        || (userManager.IsInRoleAsync(x, "Colaborador Externo").Result))
                                      && !x.Inativo)
                             .Select(x => new { Id = x.Id, Nome = x.Name, Login = x.Logins, IsExterno = userManager.IsInRoleAsync(x, "Colaborador Externo").Result });
             return Ok(item);

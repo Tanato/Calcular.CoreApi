@@ -16,6 +16,9 @@ namespace Calcular.CoreApi.Models.ViewModels
         public int NumeroAutores { get; set; }
         public string Vara { get; set; }
 
+        public int? FaseProcessoId { get; set; }
+        public FaseProcesso FaseProcesso { get; set; }
+
         public int AdvogadoId { get; set; }
         public Cliente Advogado { get; set; }
         
@@ -27,8 +30,10 @@ namespace Calcular.CoreApi.Models.ViewModels
         public List<ProcessoDetalhe> ProcessoDetalhes { get; set; }
         public List<Honorario> Honorarios { get; set; }
         public List<Servico> Servicos { get; set; }
-        public List<Cobranca> Cobrancas { get; set; }
         public List<Proposta> Propostas { get; set; }
+
+        public List<Cobranca> Cobrancas { get; set; }
+        public Cobranca UltimaCobranca { get; set; }
 
         public decimal? Total { get; set; }
         public decimal? Honorario { get; set; }

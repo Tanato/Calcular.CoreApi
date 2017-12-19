@@ -50,6 +50,7 @@ namespace Calcular.CoreApi.Controllers.Business
             var atrasado = filter.ContainsIgnoreNonSpacing("atrasado");
 
             var query = db.Processos
+<<<<<<< HEAD
                              .Include(x => x.Advogado)
                              .Include(x => x.Honorarios)
                              .Include(x => x.Servicos)
@@ -62,6 +63,26 @@ namespace Calcular.CoreApi.Controllers.Business
                                          || x.Autor.Contains(filter)
                                          || x.Advogado.Nome.Contains(filter)
                                          || x.Advogado.Empresa.Contains(filter));
+=======
+                            .Include(x => x.Advogado)
+                            .Include(x => x.Honorarios)
+                            .Where(x => string.IsNullOrEmpty(filter)
+                                        || pago || pendente || atrasado
+                                        || x.Numero.Contains(filter)
+                                        || x.Reu.Contains(filter)
+                                        || x.Autor.Contains(filter)
+                                        || x.Advogado.Nome.Contains(filter)
+                                        || x.Advogado.Empresa.Contains(filter));
+
+            // Se busca por status de honorário, concretiza a busca antes de filtrar.
+            if (pago || pendente || atrasado)
+            {
+                query = query.ToList()
+                        .Where(x => (pendente && x.StatusHonorario == "Pendente")
+                                    || (pago && x.StatusHonorario == "Pago")
+                                    || (atrasado && x.StatusHonorario == "Atrasado")).AsQueryable();
+            }
+>>>>>>> master
 
             var table = query.OrderBy(x => x.Id)
                             .Skip((page - 1) * itemsPerPage).Take(itemsPerPage)
@@ -80,6 +101,7 @@ namespace Calcular.CoreApi.Controllers.Business
             var result = db.Processos
                             .Include(x => x.Advogado)
                             .Include(x => x.Honorarios)
+                            .Include(x => x.FaseProcesso)
                             .Include(x => x.ProcessoDetalhes).ThenInclude(x => x.User)
                             .Where(x => string.IsNullOrEmpty(filter)
                                              || x.Numero.Contains(filter))
@@ -100,6 +122,8 @@ namespace Calcular.CoreApi.Controllers.Business
                                 Vara = x.Vara,
                                 Perito = x.Perito,
                                 Indicacao = x.Indicacao,
+                                FaseProcesso = x.FaseProcesso,
+                                FaseProcessoId = x.FaseProcessoId,
                                 Advogado = new Cliente
                                 {
                                     Id = x.Advogado.Id,
@@ -153,6 +177,9 @@ namespace Calcular.CoreApi.Controllers.Business
                 if (processo.Id != 0)
                     return BadRequest("Para atualizar um processo existente, utilizar o método PUT");
 
+                if (db.Processos.Any(x => x.Numero == processo.Numero))
+                    return BadRequest("Já existe um processo cadastrado com este número.");
+
                 processo.Advogado = null;
                 processo.CreatedAt = DateTime.Now;
                 processo.Honorarios = null;
@@ -203,20 +230,33 @@ namespace Calcular.CoreApi.Controllers.Business
             }
         }
 
-        [HttpPut]
-        public IActionResult PutProcesso([FromBody] Processo newItem)
+        [HttpPost]
+        [Route("valorcausa")]
+        public IActionResult PostValorCausa([FromQuery] int processoId, [FromQuery] decimal valorCausa)
         {
-            var item = db.Processos.Single(x => x.Id == newItem.Id);
+            var processo = db.Processos.Single(x => x.Id == processoId);
 
-            item.Numero = newItem.Numero;
-            item.Autor = newItem.Autor;
-            item.Reu = newItem.Reu;
-            item.Local = newItem.Local;
-            item.Parte = newItem.Parte;
-            item.Vara = newItem.Vara;
-            item.AdvogadoId = newItem.AdvogadoId;
-            item.Indicacao = newItem.Indicacao;
-            item.Perito = newItem.Perito;
+            processo.ValorCausa = valorCausa;
+            db.SaveChanges();
+
+            return Ok();
+        }
+
+        [HttpPut]
+        public IActionResult PutProcesso([FromBody] Processo model)
+        {
+            var item = db.Processos.Single(x => x.Id == model.Id);
+
+            item.Numero = model.Numero;
+            item.Autor = model.Autor;
+            item.Reu = model.Reu;
+            item.Local = model.Local;
+            item.Parte = model.Parte;
+            item.Vara = model.Vara;
+            item.AdvogadoId = model.AdvogadoId;
+            item.Indicacao = model.Indicacao;
+            item.Perito = model.Perito;
+            item.FaseProcessoId = model.FaseProcessoId;
 
             db.SaveChanges();
             return Ok(item);
@@ -268,6 +308,32 @@ namespace Calcular.CoreApi.Controllers.Business
             var result = db.Processos.Where(x => string.IsNullOrEmpty(filter)
                                              || x.Vara.ContainsIgnoreNonSpacing(filter))
                                     .Select(x => x.Vara)
+                                    .Distinct()
+                                    .OrderBy(x => x)
+                                    .ToList();
+
+            return Ok(result);
+        }
+
+        [HttpGet("reu/{filter?}")]
+        public IActionResult GetReu([FromQuery] string filter = "")
+        {
+            var result = db.Processos.Where(x => string.IsNullOrEmpty(filter)
+                                             || x.Reu.ContainsIgnoreNonSpacing(filter))
+                                    .Select(x => x.Reu)
+                                    .Distinct()
+                                    .OrderBy(x => x)
+                                    .ToList();
+
+            return Ok(result);
+        }
+
+        [HttpGet("autor/{filter?}")]
+        public IActionResult GetAutor([FromQuery] string filter = "")
+        {
+            var result = db.Processos.Where(x => string.IsNullOrEmpty(filter)
+                                             || x.Autor.ContainsIgnoreNonSpacing(filter))
+                                    .Select(x => x.Autor)
                                     .Distinct()
                                     .OrderBy(x => x)
                                     .ToList();

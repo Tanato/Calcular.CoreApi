@@ -9,16 +9,13 @@ using Calcular.CoreApi.Shared;
 namespace Calcular.CoreApi.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20170405032915_v0.1.2")]
+    partial class v012
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
             modelBuilder
-<<<<<<< HEAD
-                .HasAnnotation("ProductVersion", "1.0.3")
-=======
                 .HasAnnotation("ProductVersion", "1.1.0-rtm-22752")
->>>>>>> master
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
             modelBuilder.Entity("Calcular.CoreApi.Models.Business.Atividade", b =>
@@ -275,20 +272,9 @@ namespace Calcular.CoreApi.Migrations
 
                     b.Property<string>("Perito");
 
-                    b.Property<DateTime?>("PrazoHonorario");
-
                     b.Property<string>("Reu");
 
-<<<<<<< HEAD
-                    b.Property<int>("StatusHonorario");
-=======
-                    b.Property<decimal?>("Total")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("money")
-                        .HasComputedColumnSql("[dbo].TotalHonorarios([Id])");
-
                     b.Property<decimal?>("ValorCausa");
->>>>>>> master
 
                     b.Property<string>("Vara");
 

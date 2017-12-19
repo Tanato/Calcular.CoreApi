@@ -91,6 +91,15 @@ namespace Calcular.CoreApi.Controllers.Business
                                 Data = x.Nascimento.Value,
                             }).ToList();
 
+            result.AddRange(db.Users
+                                .Where(x => days.Any(d => d.DayOfYear == x.BirthDate.DayOfYear))
+                                .Select(x => new
+                                {
+                                    Id = 0,
+                                    Nome = x.Name,
+                                    Data = x.BirthDate,
+                                }).ToList());
+
             return Ok(result.OrderBy(x => x.Data));
         }
 
@@ -98,7 +107,7 @@ namespace Calcular.CoreApi.Controllers.Business
         public IActionResult GetAlocacao()
         {
             var result = db.Atividades
-                            .Where(x => !string.IsNullOrEmpty(x.ResponsavelId) 
+                            .Where(x => !string.IsNullOrEmpty(x.ResponsavelId)
                                         && (x.EtapaAtividade == EtapaAtividadeEnum.Original || x.EtapaAtividade == EtapaAtividadeEnum.Refazer)
                                         && x.TipoExecucao == TipoExecucaoEnum.Pendente)
                             .GroupBy(x => x.Responsavel)

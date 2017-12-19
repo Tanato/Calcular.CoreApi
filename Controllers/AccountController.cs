@@ -127,6 +127,39 @@ namespace MovieAngularJSApp.Controllers
             return BadRequest(string.Join(Environment.NewLine, ModelState.Values.SelectMany(v => v.Errors).Select(x => x.ErrorMessage)));
         }
 
+        [HttpPost("resetpassword")]
+        [Authorize(Roles = "Gerencial")]
+        public async Task<IActionResult> ResetPasswork([FromBody] RegisterViewModel usuario)
+        {
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    var user = await userManager.FindByNameAsync(usuario.UserName);
+                    var result = await userManager.RemovePasswordAsync(user);
+                    if (result.Succeeded)
+                    {
+                        result = await userManager.AddPasswordAsync(user, "senha123");
+                        if (result.Succeeded)
+                        {
+                            return Ok();
+                        }
+                    }
+                    else
+                    {
+                        var error = result.Errors.FirstOrDefault();
+                        ModelState.AddModelError(error.Code, error.Description);
+                        return BadRequest(result.Errors.FirstOrDefault().Description);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            return BadRequest(string.Join(Environment.NewLine, ModelState.Values.SelectMany(v => v.Errors).Select(x => x.ErrorMessage)));
+        }
+
         [HttpGet("logout")]
         public async Task<IActionResult> SignOut()
         {

@@ -16,9 +16,14 @@ namespace Calcular.CoreApi.Models.Business
         public int NumeroAutores { get; set; }
         public string Vara { get; set; }
 
+        public int? FaseProcessoId { get; set; }
+        public FaseProcesso FaseProcesso { get; set; }
+
+        public decimal? ValorCausa { get; set; }
+
         public int AdvogadoId { get; set; }
         public Cliente Advogado { get; set; }
-        
+
         public string Perito { get; set; }
         public string Indicacao { get; set; }
 
@@ -33,28 +38,10 @@ namespace Calcular.CoreApi.Models.Business
         public List<Cobranca> Cobrancas { get; set; }
         public List<Proposta> Propostas { get; set; }
 
-        public decimal? Total
-        {
-            get
-            {
-                if (Honorarios != null && Honorarios.Count > 0)
-                {
-                    //ToDo
-                    //var listPositivo = Honorarios.Where(x => x.Registro == RegistroEnum.Honorario && !x.Cancelado && x.Valor.HasValue);
-                    //var positivo = listPositivo.Count() > 0 ? listPositivo.Sum(x => x.Valor) : null;
-
-                    //var listNegativo = Honorarios.Where(x => x.Registro == RegistroEnum.Pagamento && !x.Cancelado && x.Valor.HasValue);
-                    //var negativo = listNegativo.Count() > 0 ? listNegativo.Sum(x => x.Valor) : null;
-
-                    var positivo = Honorarios.Where(x => x.Registro == RegistroEnum.Honorario && !x.Cancelado).Sum(x => x.Valor);
-                    var negativo = Honorarios.Where(x => x.Registro == RegistroEnum.Pagamento && !x.Cancelado).Sum(x => x.Valor);
-
-                    return positivo - negativo;
-                }
-                else
-                    return null;
-            }
-        }
+        /// <summary>
+        /// Procedure que Calcula valor pendente do processo.
+        /// </summary>
+        public decimal? Total { get; set; }
 
         public decimal? Honorario
         {
@@ -88,5 +75,35 @@ namespace Calcular.CoreApi.Models.Business
                     return null;
             }
         }
+<<<<<<< HEAD
+=======
+
+        public string StatusHonorario
+        {
+            get
+            {
+                if (Honorarios == null || Honorarios.All(x => x.Cancelado) || Honorarios.Count() == 0)
+                {
+                    return "Vazio";
+                }
+                else if (Total.HasValue)
+                {
+                    if (Total <= 0)
+                        return "Pago";
+                    else if (Prazo.HasValue && Prazo.Value.Date < DateTime.Now.Date)
+                        return "Atrasado";
+                    else
+                        return "Pendente";
+                }
+                else if (Honorario.HasValue && Honorario.Value == 0
+                        && Honorarios != null && !Honorarios.All(x => x.Cancelado))
+                {
+                    return "Pendente";
+                }
+                else
+                    return string.Empty;
+            }
+        }
+>>>>>>> master
     }
 }

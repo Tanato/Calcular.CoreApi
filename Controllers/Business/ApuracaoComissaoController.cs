@@ -2,6 +2,7 @@
 using Calcular.CoreApi.Models;
 using Calcular.CoreApi.Models.Business;
 using Calcular.CoreApi.Shared;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -84,6 +85,8 @@ namespace Calcular.CoreApi.Controllers.Business
                                                 Id = a.Servico.ProcessoId,
                                                 Numero = a.Servico.Processo.Numero,
                                                 NumeroAutores = a.Servico.Processo.NumeroAutores,
+                                                Reu = a.Servico.Processo.Reu,
+                                                Autor = a.Servico.Processo.Autor,
                                             },
                                         },
                                     }
@@ -135,6 +138,8 @@ namespace Calcular.CoreApi.Controllers.Business
                                                 Id = a.Servico.ProcessoId,
                                                 Numero = a.Servico.Processo.Numero,
                                                 NumeroAutores = a.Servico.Processo.NumeroAutores,
+                                                Reu = a.Servico.Processo.Reu,
+                                                Autor = a.Servico.Processo.Autor,
                                             },
                                         },
                                     }
@@ -149,16 +154,12 @@ namespace Calcular.CoreApi.Controllers.Business
         }
 
         [HttpPost]
+        [Authorize(Roles = "Gerencial,Administrativo")]
         public async Task<IActionResult> Post([FromBody] ComissaoFuncionarioMes model)
         {
             try
             {
                 var user = userManager.GetUserAsync(HttpContext.User).Result;
-                var isAdminOrGerencial = await userManager.IsInRoleAsync(user, "Administrativo")
-                                      || await userManager.IsInRoleAsync(user, "Gerencial");
-
-                if (!isAdminOrGerencial)
-                    return Unauthorized();
 
                 var comissoes = db.Comissoes.ToList();
                 var atividades = db.Atividades

@@ -9,16 +9,13 @@ using Calcular.CoreApi.Shared;
 namespace Calcular.CoreApi.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20170405005634_v0.1.1")]
+    partial class v011
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
             modelBuilder
-<<<<<<< HEAD
-                .HasAnnotation("ProductVersion", "1.0.3")
-=======
                 .HasAnnotation("ProductVersion", "1.1.0-rtm-22752")
->>>>>>> master
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
             modelBuilder.Entity("Calcular.CoreApi.Models.Business.Atividade", b =>
@@ -208,18 +205,6 @@ namespace Calcular.CoreApi.Migrations
                     b.ToTable("ComissoesFuncionarioMes");
                 });
 
-            modelBuilder.Entity("Calcular.CoreApi.Models.Business.FaseProcesso", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<string>("Nome");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("FaseProcessos");
-                });
-
             modelBuilder.Entity("Calcular.CoreApi.Models.Business.Honorario", b =>
                 {
                     b.Property<int>("Id")
@@ -261,8 +246,6 @@ namespace Calcular.CoreApi.Migrations
 
                     b.Property<DateTime>("CreatedAt");
 
-                    b.Property<int?>("FaseProcessoId");
-
                     b.Property<string>("Indicacao");
 
                     b.Property<int>("Local");
@@ -275,28 +258,15 @@ namespace Calcular.CoreApi.Migrations
 
                     b.Property<string>("Perito");
 
-                    b.Property<DateTime?>("PrazoHonorario");
-
                     b.Property<string>("Reu");
 
-<<<<<<< HEAD
-                    b.Property<int>("StatusHonorario");
-=======
-                    b.Property<decimal?>("Total")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("money")
-                        .HasComputedColumnSql("[dbo].TotalHonorarios([Id])");
-
                     b.Property<decimal?>("ValorCausa");
->>>>>>> master
 
                     b.Property<string>("Vara");
 
                     b.HasKey("Id");
 
                     b.HasIndex("AdvogadoId");
-
-                    b.HasIndex("FaseProcessoId");
 
                     b.ToTable("Processos");
                 });
@@ -692,10 +662,6 @@ namespace Calcular.CoreApi.Migrations
                         .WithMany("Processos")
                         .HasForeignKey("AdvogadoId")
                         .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("Calcular.CoreApi.Models.Business.FaseProcesso", "FaseProcesso")
-                        .WithMany()
-                        .HasForeignKey("FaseProcessoId");
                 });
 
             modelBuilder.Entity("Calcular.CoreApi.Models.Business.ProcessoDetalhe", b =>

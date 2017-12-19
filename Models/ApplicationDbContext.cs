@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 
 namespace Calcular.CoreApi.Models
 {
+<<<<<<< HEAD
     public class ApplicationContextFactory : IDbContextFactory<ApplicationDbContext>
     {
         public ApplicationDbContext Create()
@@ -14,14 +15,29 @@ namespace Calcular.CoreApi.Models
             optionsBuilder.UseSqlServer(@"Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=Calcular.CoreSql;Integrated Security=True");
 
             return new ApplicationDbContext(optionsBuilder.Options);
+=======
+    public class TemporaryDbContextFactory : IDbContextFactory<ApplicationDbContext>
+    {
+        public ApplicationDbContext Create()
+        {
+            var builder = new DbContextOptionsBuilder<ApplicationDbContext>();
+            builder.UseSqlServer(@"Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=Calcular.CoreSql;Integrated Security=True");
+            return new ApplicationDbContext(builder.Options);
+>>>>>>> master
         }
 
         public ApplicationDbContext Create(DbContextFactoryOptions options)
         {
+<<<<<<< HEAD
             var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
             optionsBuilder.UseSqlServer(@"Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=Calcular.CoreSql;Integrated Security=True");
 
             return new ApplicationDbContext(optionsBuilder.Options);
+=======
+            var builder = new DbContextOptionsBuilder<ApplicationDbContext>();
+            builder.UseSqlServer(@"Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=Calcular.CoreSql;Integrated Security=True");
+            return new ApplicationDbContext(builder.Options);
+>>>>>>> master
         }
     }
 
@@ -32,6 +48,7 @@ namespace Calcular.CoreApi.Models
         public DbSet<Atividade> Atividades { get; set; }
         public DbSet<TipoAtividade> TipoAtividades { get; set; }
         public DbSet<Processo> Processos { get; set; }
+        public DbSet<FaseProcesso> FaseProcessos { get; set; }
         public DbSet<Cliente> Clientes { get; set; }
         public DbSet<Servico> Servicos { get; set; }
         public DbSet<TipoServico> TipoServicos { get; set; }
@@ -56,6 +73,11 @@ namespace Calcular.CoreApi.Models
             builder.Entity<IdentityRole>().ToTable("Roles");
 
             builder.Entity<TipoAtividade>().HasAlternateKey(x => x.Nome);
+
+            builder.Entity<Processo>()
+                .Property(p => p.Total)
+                .HasColumnType("money")
+                .HasComputedColumnSql(@"[dbo].TotalHonorarios([Id])");
         }
     }
 }
